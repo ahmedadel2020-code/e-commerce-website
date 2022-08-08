@@ -1,20 +1,20 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import Home from "./pages/Home";
+import Navbar from "../components/Navbar";
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 90%;
+  margin: 0 auto;
 `;
 
-class App extends Component {
+export class Home extends Component {
   render() {
     return (
       <Container>
-        <Home />
+        <Navbar />
       </Container>
     );
   }
 }
 
-export default App;
+export default Home;
