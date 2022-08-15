@@ -8,12 +8,12 @@ import logo from "../assets/logo.svg";
 import cart from "../assets/cart.svg";
 import arrowDown from "../assets/arrowDown.svg";
 import arrowUp from "../assets/arrowUp.svg";
+import { withRouter } from "react-router-dom";
 
 const Container = styled.div`
   height: 80px;
   display: flex;
   align-items: center;
-  /* background-color: gray; */
 `;
 
 const Left = styled.div`
@@ -37,7 +37,6 @@ const CategoryItem = styled.li`
   &:nth-last-child() {
     margin-right: 0;
   }
-
   &:nth-child(${(props) => props.categoryIndex}) {
     color: #5ece7b;
     &::after {
@@ -74,7 +73,7 @@ const DropdownList = styled.div`
   flex-direction: column;
   position: absolute;
   transform: translate(-10%, 20%);
-  box-shadow: 0px 0px 15px 0px #e9e9e9;
+  box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);
 `;
 
 const DropdownListItem = styled.div`
@@ -92,6 +91,7 @@ const DropdownListItem = styled.div`
 
 const ArrowImage = styled.img`
   margin-left: 10px;
+  cursor: pointer;
 `;
 
 const CartImage = styled.img`
@@ -139,10 +139,15 @@ class Navbar extends Component {
 
   handleSelectCurrency = (currency, index) => {
     this.setState({ selectedCurrency: currency, currencyId: index + 1 });
+    this.props.onSendSelectedCurrency(currency);
   };
 
-  handleChangeCategory = (index) => {
-    this.setState({ categoryId: index + 1 });
+  handleCategory = (categoryName, index) => {
+    this.setState({
+      categoryId: ++index,
+    });
+    this.props.history.push(`/category/${categoryName}`);
+    this.props.onSendCategoryName(categoryName);
   };
 
   render() {
@@ -157,7 +162,7 @@ class Navbar extends Component {
                 <CategoryItem
                   categoryIndex={this.state.categoryId}
                   key={category.name}
-                  onClick={() => this.handleChangeCategory(index)}
+                  onClick={() => this.handleCategory(category.name, index)}
                 >
                   {category.name}
                 </CategoryItem>
@@ -195,7 +200,9 @@ class Navbar extends Component {
   }
 }
 
-export default compose(
-  graphql(getCategories, { name: "getCategories" }),
-  graphql(getCurrencies, { name: "getCurrencies" })
-)(Navbar);
+export default withRouter(
+  compose(
+    graphql(getCategories, { name: "getCategories" }),
+    graphql(getCurrencies, { name: "getCurrencies" })
+  )(Navbar)
+);
