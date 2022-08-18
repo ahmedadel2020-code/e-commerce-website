@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
 import styled from "styled-components";
 import whiteCart from "../assets/whiteCart.svg";
+import { withRouter } from "../Routes/withRouter";
 
 const Container = styled.div`
   width: 386px;
@@ -63,6 +63,7 @@ class ProductItem extends Component {
 
     this.state = {
       showCart: false,
+      redirect: false,
     };
   }
 
@@ -75,7 +76,7 @@ class ProductItem extends Component {
   };
 
   handleShowProductDetails = () => {
-    this.props.history.push(`/product/${this.props.product.id}`);
+    this.props.navigate(`/product/${this.props.product.id}`);
   };
 
   render() {
@@ -83,7 +84,6 @@ class ProductItem extends Component {
     const productPrice = product.prices.filter(
       (price) => price.currency.symbol === productCurrencySymbol
     );
-
     return (
       <Container
         onMouseEnter={this.handleShowCart}

@@ -8,7 +8,6 @@ import logo from "../assets/logo.svg";
 import cart from "../assets/cart.svg";
 import arrowDown from "../assets/arrowDown.svg";
 import arrowUp from "../assets/arrowUp.svg";
-import { withRouter } from "react-router-dom";
 
 const Container = styled.div`
   height: 80px;
@@ -143,10 +142,7 @@ class Navbar extends Component {
   };
 
   handleCategory = (categoryName, index) => {
-    this.setState({
-      categoryId: ++index,
-    });
-    this.props.history.push(`/category/${categoryName}`);
+    this.setState({ categoryId: index + 1 });
     this.props.onSendCategoryName(categoryName);
   };
 
@@ -161,8 +157,8 @@ class Navbar extends Component {
               categories.map((category, index) => (
                 <CategoryItem
                   categoryIndex={this.state.categoryId}
-                  key={category.name}
                   onClick={() => this.handleCategory(category.name, index)}
+                  key={category.name}
                 >
                   {category.name}
                 </CategoryItem>
@@ -200,9 +196,7 @@ class Navbar extends Component {
   }
 }
 
-export default withRouter(
-  compose(
-    graphql(getCategories, { name: "getCategories" }),
-    graphql(getCurrencies, { name: "getCurrencies" })
-  )(Navbar)
-);
+export default compose(
+  graphql(getCategories, { name: "getCategories" }),
+  graphql(getCurrencies, { name: "getCurrencies" })
+)(Navbar);

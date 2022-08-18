@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
-import ProductDetails from "./pages/ProductDetails";
 import Home from "./pages/Home";
+import ProductPage from "./pages/ProductPage";
 
 const Container = styled.div`
   width: 100vw;
@@ -13,11 +13,12 @@ class App extends Component {
   render() {
     return (
       <Container>
-        <Switch>
-          <Route path="/" component={Home} exact />
-          <Route path="/product/:id" component={ProductDetails} />
-          <Route path="/category/:category" component={Home} />
-        </Switch>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="product/:productId" element={<ProductPage />} />
+          </Routes>
+        </BrowserRouter>
       </Container>
     );
   }
