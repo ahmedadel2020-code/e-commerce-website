@@ -9,11 +9,16 @@ import cart from "../assets/cart.svg";
 import arrowDown from "../assets/arrowDown.svg";
 import arrowUp from "../assets/arrowUp.svg";
 import CartOverlay from "./CartOverlay";
+import { withRouter } from "../Routes/withRouter";
+import { connect } from "react-redux";
+import { getSelectedCurrencySymbol } from "../actions/currency";
 
 const Container = styled.div`
   height: 80px;
   display: flex;
   align-items: center;
+  width: 90%;
+  margin: 0 auto;
 `;
 
 const Left = styled.div`
@@ -74,6 +79,7 @@ const DropdownList = styled.div`
   position: absolute;
   transform: translate(-10%, 20%);
   box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);
+  z-index: 5;
 `;
 
 const DropdownListItem = styled.div`
@@ -135,11 +141,9 @@ class Navbar extends Component {
 
     this.state = {
       openDropdown: false,
-      selectedCurrency: "$",
       currencyId: 1,
       categoryId: 1,
       openCart: false,
-      cartQuantity: 0,
     };
   }
 
@@ -163,36 +167,27 @@ class Navbar extends Component {
   };
 
   handleSelectCurrency = (currency, index) => {
-    this.setState({ selectedCurrency: currency, currencyId: index + 1 });
-    this.props.onSendSelectedCurrency(currency);
+    this.setState({
+      currencyId: index + 1,
+      openDropdown: false,
+    });
+    this.props.dispatch(getSelectedCurrencySymbol(currency));
   };
 
   handleCategory = (categoryName, index) => {
     this.setState({ categoryId: index + 1 });
-    this.props.onSendCategoryName(categoryName);
+    this.props.navigate(`/category/${categoryName}`);
   };
 
   handleCartState = () => {
     this.setState((prevState) => ({ openCart: !prevState.openCart }));
-    this.props.onSendCartOverlayState(!this.state.openCart);
   };
 
-  handleReceiveActionName = (actionName) => {
-    if (actionName === "increase") {
-      this.setState((prevState) => ({
-        cartQuantity: prevState.cartQuantity + 1,
-      }));
-    } else {
-      this.setState((prevState) => ({
-        cartQuantity: prevState.cartQuantity - 1,
-      }));
-    }
-  };
 
   render() {
     const { categories, loading: loadingOne } = this.props.getCategories;
     const { currencies, loading: loadingTwo } = this.props.getCurrencies;
-    const { products } = this.props;
+    const { currencySymbol, cartQuantity } = this.props;
 
     return (
       <Container>
@@ -215,7 +210,7 @@ class Navbar extends Component {
         </Center>
         <Right>
           <DropDownContainer ref={this.wrapperRef}>
-            <SelectedCurrency>{this.state.selectedCurrency}</SelectedCurrency>
+            <SelectedCurrency>{currencySymbol}</SelectedCurrency>
             <ArrowImage
               src={this.state.openDropdown ? arrowUp : arrowDown}
               alt="arrowDown"
@@ -236,28 +231,27 @@ class Navbar extends Component {
           </DropDownContainer>
           <Cart onClick={this.handleCartState}>
             <CartImage src={cart} alt="cart" />
-            <CartQuantity>
-              {this.state.cartQuantity === 0
-                ? products
-                  ? products.length
-                  : 0
-                : this.state.cartQuantity + products?.length}
-            </CartQuantity>
+            <CartQuantity>{cartQuantity}</CartQuantity>
           </Cart>
-          {this.state.openCart && (
-            <CartOverlay
-              products={products}
-              productCurrencySymbol={this.state.selectedCurrency}
-              onSendActionNameForNavbar={this.handleReceiveActionName}
-            />
-          )}
+          {this.state.openCart && <CartOverlay />}
         </Right>
       </Container>
     );
   }
 }
 
-export default compose(
-  graphql(getCategories, { name: "getCategories" }),
-  graphql(getCurrencies, { name: "getCurrencies" })
-)(Navbar);
+function mapStateToProps({ currency, cart }) {
+  return {
+    currencySymbol: currency.currencySymbol,
+    cartQuantity: cart.cartQuantity,
+  };
+}
+
+export default connect(mapStateToProps)(
+  withRouter(
+    compose(
+      graphql(getCategories, { name: "getCategories" }),
+      graphql(getCurrencies, { name: "getCurrencies" })
+    )(Navbar)
+  )
+);

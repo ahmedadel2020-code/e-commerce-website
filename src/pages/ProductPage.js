@@ -1,10 +1,10 @@
 import { Query } from "@apollo/client/react/components";
 import React, { Component } from "react";
 import styled from "styled-components";
-import Navbar from "../components/Navbar";
 import { GET_PRODUCT } from "../queries/queries";
 import { withRouter } from "../Routes/withRouter";
 import ReactHtmlParser from "html-react-parser";
+import { connect } from "react-redux";
 
 const Container = styled.div`
   width: 90%;
@@ -189,15 +189,10 @@ class ProductPage extends Component {
 
     this.state = {
       imageIndex: 0,
-      selectedCurrency: "$",
       colorIndex: 0,
       selectedAttributes: {},
     };
   }
-
-  receiveCurrencySymbol = (currencySymbol) => {
-    this.setState({ selectedCurrency: currencySymbol });
-  };
 
   handleShowImage = (imageIndex) => {
     this.setState({ imageIndex });
@@ -223,23 +218,22 @@ class ProductPage extends Component {
 
   render() {
     const { productId } = this.props.params;
-    console.log("state", this.state);
+    const { currencySymbol } = this.props;
+
     return (
       <Query query={GET_PRODUCT} variables={{ id: productId }}>
         {({ data, loading }) => {
           if (!loading) {
             const { product } = data;
-            console.log(product);
 
             const productPrice = product.prices.filter(
-              (price) => price.currency.symbol === this.state.selectedCurrency
+              (price) => price.currency.symbol === currencySymbol
             );
 
             const productDescriptionHtml = product.description;
 
             return (
               <Container>
-                <Navbar onSendSelectedCurrency={this.receiveCurrencySymbol} />
                 <ProductWrapper>
                   <ProductSubImages>
                     {product.gallery.map((productImg, index) => (
@@ -312,7 +306,7 @@ class ProductPage extends Component {
                       ))}
                     </ProductAttributes>
                     <ProductPriceTypography>Price:</ProductPriceTypography>
-                    <ProductPrice>{`${this.state.selectedCurrency} ${productPrice[0].amount}`}</ProductPrice>
+                    <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
                     <Button>Add to Cart</Button>
                     <ProductDescription>
                       {ReactHtmlParser(productDescriptionHtml)}
@@ -328,4 +322,8 @@ class ProductPage extends Component {
   }
 }
 
-export default withRouter(ProductPage);
+function mapStateToProps({ currency }) {
+  return { currencySymbol: currency.currencySymbol };
+}
+
+export default connect(mapStateToProps)(withRouter(ProductPage));

@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import whiteCart from "../assets/whiteCart.svg";
 import { withRouter } from "../Routes/withRouter";
+import { connect } from "react-redux";
+import { addProductToCart } from "../actions/cart";
 
 const Container = styled.div`
   width: 386px;
@@ -63,7 +65,6 @@ class ProductItem extends Component {
 
     this.state = {
       showCart: false,
-      redirect: false,
     };
   }
 
@@ -85,14 +86,24 @@ class ProductItem extends Component {
     }
   };
 
-  handleAddProductToCart = (product) => {
-    this.props.onSendNewProduct(product);
+  handleAddProductToCart = (newProduct) => {
+    const { productsInCart, dispatch } = this.props;
+    if (productsInCart.length > 0) {
+      const foundedProduct = productsInCart.filter(
+        (productInCart) => productInCart.product.id === newProduct.id
+      );
+      if (foundedProduct.length === 0) {
+        dispatch(addProductToCart(newProduct));
+      }
+    } else {
+      dispatch(addProductToCart(newProduct));
+    }
   };
 
   render() {
-    const { product, productCurrencySymbol } = this.props;
+    const { product, currencySymbol } = this.props;
     const productPrice = product.prices.filter(
-      (price) => price.currency.symbol === productCurrencySymbol
+      (price) => price.currency.symbol === currencySymbol
     );
     return (
       <Container
@@ -115,11 +126,18 @@ class ProductItem extends Component {
             </Cart>
           </ImageWithCartWrapper>
           <ProductName>{`${product.brand} ${product.name}`}</ProductName>
-          <ProductPrice>{`${productCurrencySymbol} ${productPrice[0].amount}`}</ProductPrice>
+          <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
         </ProductContentWrapper>
       </Container>
     );
   }
 }
 
-export default withRouter(ProductItem);
+function mapStateToProps({ currency, cart }) {
+  return {
+    currencySymbol: currency.currencySymbol,
+    productsInCart: cart.products,
+  };
+}
+
+export default connect(mapStateToProps)(withRouter(ProductItem));

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import Navbar from "../components/Navbar";
 import { Query } from "@apollo/client/react/components";
 import { GET_CATEGORY } from "../queries/queries";
 import { withRouter } from "../Routes/withRouter";
@@ -33,6 +32,7 @@ const CategoryContainer = styled.div`
 const CategoryParagraph = styled.p`
   font-size: 42px;
   text-transform: uppercase;
+  margin-left: 40px;
 `;
 
 class Home extends Component {
@@ -42,56 +42,22 @@ class Home extends Component {
     this.state = {
       category: "all",
       selectedCurrency: "$",
-      products: [],
       cartState: false,
-      cartQuantity: 0,
     };
   }
-  receiveCategoryNameFromNav = (category) => {
-    this.setState({ category });
-  };
-  receiveCurrencySymbol = (currencySymbol) => {
-    this.setState({ selectedCurrency: currencySymbol });
-  };
-
-  receiveAddedProduct = (newProduct) => {
-    if (this.state.products.length > 0) {
-      const foundedProduct = this.state.products.filter(
-        (product) => product.id === newProduct.id
-      );
-      if (foundedProduct.length === 0) {
-        this.setState((prevState) => ({
-          products: [...prevState.products, newProduct],
-          cartQuantity: prevState.cartQuantity + 1,
-        }));
-      }
-    } else {
-      this.setState((prevState) => ({
-        products: [...prevState.products, newProduct],
-        cartQuantity: prevState.cartQuantity + 1,
-      }));
-    }
-  };
-
-  receiveCartOverlayState = (cartState) => {
-    this.setState({ cartState });
-    this.props.onSendOverlayState(cartState);
-  };
 
   render() {
+    const { categoryName } = this.props.params;
+
     return (
-      <Query query={GET_CATEGORY} variables={{ title: this.state.category }}>
+      <Query
+        query={GET_CATEGORY}
+        variables={{ title: categoryName ? categoryName : "all" }}
+      >
         {({ data, loading }) => {
           if (!loading) {
             return (
               <Container>
-                <Navbar
-                  onSendSelectedCurrency={this.receiveCurrencySymbol}
-                  onSendCategoryName={this.receiveCategoryNameFromNav}
-                  onSendCartOverlayState={this.receiveCartOverlayState}
-                  products={this.state.products}
-                  cartQuantity={this.state.cartQuantity}
-                />
                 <BodyOverlay openOverlay={this.state.cartState}></BodyOverlay>
                 <CategoryParagraph>{data.category.name}</CategoryParagraph>
                 <CategoryContainer>
@@ -99,7 +65,6 @@ class Home extends Component {
                     <ProductItem
                       key={product.id}
                       product={product}
-                      productCurrencySymbol={this.state.selectedCurrency}
                       onSendNewProduct={this.receiveAddedProduct}
                     />
                   ))}
