@@ -75,8 +75,18 @@ class ProductItem extends Component {
     this.setState({ showCart: false });
   };
 
-  handleShowProductDetails = () => {
-    this.props.navigate(`/product/${this.props.product.id}`);
+  handleShowProductDetails = (e) => {
+    e.preventDefault();
+
+    const dataValue = e.target.getAttribute("data-value");
+
+    if (dataValue !== "child") {
+      this.props.navigate(`/product/${this.props.product.id}`);
+    }
+  };
+
+  handleAddProductToCart = (product) => {
+    this.props.onSendNewProduct(product);
   };
 
   render() {
@@ -92,9 +102,16 @@ class ProductItem extends Component {
       >
         <ProductContentWrapper>
           <ImageWithCartWrapper>
-            <ProductImage src={product.gallery[0]} alt={product.name} />
-            <Cart cartState={this.state.showCart}>
-              <ProductCart src={whiteCart} alt="cart" />
+            <ProductImage
+              src={product.gallery[0]}
+              alt={product.name}
+              data-value="parent"
+            />
+            <Cart
+              cartState={this.state.showCart}
+              onClick={() => this.handleAddProductToCart(product)}
+            >
+              <ProductCart src={whiteCart} alt="cart" data-value="child" />
             </Cart>
           </ImageWithCartWrapper>
           <ProductName>{`${product.brand} ${product.name}`}</ProductName>

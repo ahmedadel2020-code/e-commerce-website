@@ -8,6 +8,7 @@ import logo from "../assets/logo.svg";
 import cart from "../assets/cart.svg";
 import arrowDown from "../assets/arrowDown.svg";
 import arrowUp from "../assets/arrowUp.svg";
+import CartOverlay from "./CartOverlay";
 
 const Container = styled.div`
   height: 80px;
@@ -93,9 +94,31 @@ const ArrowImage = styled.img`
   cursor: pointer;
 `;
 
+const Cart = styled.div`
+  position: relative;
+`;
+
 const CartImage = styled.img`
-  cursor: pointer;
   margin-left: 32px;
+  cursor: pointer;
+`;
+
+const CartQuantity = styled.div`
+  width: 20px;
+  height: 20px;
+  background-color: #1d1f22;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  position: absolute;
+  top: -11px;
+  right: -10px;
+  cursor: pointer;
 `;
 
 const SelectedCurrency = styled.span`
@@ -115,11 +138,14 @@ class Navbar extends Component {
       selectedCurrency: "$",
       currencyId: 1,
       categoryId: 1,
+      openCart: false,
+      cartQuantity: 0,
     };
   }
 
   componentDidMount() {
     document.addEventListener("mousedown", this.handleClickOutside);
+    this.setState({ cartQuantity: this.props.cartQuantity });
   }
 
   componentWillUnmount() {
@@ -146,9 +172,28 @@ class Navbar extends Component {
     this.props.onSendCategoryName(categoryName);
   };
 
+  handleCartState = () => {
+    this.setState((prevState) => ({ openCart: !prevState.openCart }));
+    this.props.onSendCartOverlayState(!this.state.openCart);
+  };
+
+  handleReceiveActionName = (actionName) => {
+    if (actionName === "increase") {
+      this.setState((prevState) => ({
+        cartQuantity: prevState.cartQuantity + 1,
+      }));
+    } else {
+      this.setState((prevState) => ({
+        cartQuantity: prevState.cartQuantity - 1,
+      }));
+    }
+  };
+
   render() {
     const { categories, loading: loadingOne } = this.props.getCategories;
     const { currencies, loading: loadingTwo } = this.props.getCurrencies;
+    const { products } = this.props;
+
     return (
       <Container>
         <Left>
@@ -189,7 +234,23 @@ class Navbar extends Component {
                 ))}
             </DropdownList>
           </DropDownContainer>
-          <CartImage src={cart} alt="cart" />
+          <Cart onClick={this.handleCartState}>
+            <CartImage src={cart} alt="cart" />
+            <CartQuantity>
+              {this.state.cartQuantity === 0
+                ? products
+                  ? products.length
+                  : 0
+                : this.state.cartQuantity + products?.length}
+            </CartQuantity>
+          </Cart>
+          {this.state.openCart && (
+            <CartOverlay
+              products={products}
+              productCurrencySymbol={this.state.selectedCurrency}
+              onSendActionNameForNavbar={this.handleReceiveActionName}
+            />
+          )}
         </Right>
       </Container>
     );
