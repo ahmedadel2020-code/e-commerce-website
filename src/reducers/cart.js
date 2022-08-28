@@ -1,6 +1,8 @@
 import {
   ADD_PRODUCT_TO_CART,
+  CART_OVERLAY_STATE,
   DECREMENT_PRODUCT_QUANTITY,
+  GET_TOTAL_PRICE,
   INCREMENT_PRODUCT_QUANTITY,
   REMOVE_PRODUCT_FROM_CART,
 } from "../actions/cart";
@@ -9,18 +11,26 @@ const initialState = {
   products: [],
   cartQuantity: 0,
   totalPrice: 0,
+  cartOverlayState: false,
 };
 
 const cart = (state = initialState, action) => {
   switch (action.type) {
     case ADD_PRODUCT_TO_CART:
-      const product = action.payload.prices.filter(
+      const product = action.payload.newProduct.prices.filter(
         (price) => price.currency.symbol === "$"
       );
 
       return {
         ...state,
-        products: [...state.products, { product: action.payload, quantity: 1 }],
+        products: [
+          ...state.products,
+          {
+            product: action.payload.newProduct,
+            quantity: 1,
+            selectedAttributes: action.payload.selectedAttributes,
+          },
+        ],
         cartQuantity: state.cartQuantity + 1,
         totalPrice: (
           Number(state.totalPrice) + Number(product[0].amount)
@@ -30,7 +40,6 @@ const cart = (state = initialState, action) => {
     case REMOVE_PRODUCT_FROM_CART:
       state.products.forEach((stateProduct) => {
         if (stateProduct.product.id === action.payload.productId) {
-          // stateProduct.quantity -= 1;
           const productPrice = stateProduct.product.prices.filter(
             (price) => price.currency.symbol === action.payload.currencySymbol
           );
@@ -48,6 +57,7 @@ const cart = (state = initialState, action) => {
       };
 
     case INCREMENT_PRODUCT_QUANTITY:
+      console.log(action.payload.currencySymbol);
       state.products.forEach((stateProduct) => {
         if (stateProduct.product.id === action.payload.productId) {
           stateProduct.quantity += 1;
@@ -80,6 +90,30 @@ const cart = (state = initialState, action) => {
       return {
         ...state,
         cartQuantity: state.cartQuantity - 1,
+      };
+
+    case GET_TOTAL_PRICE:
+      let totalPrice = 0;
+
+      state.products.forEach((stateProduct) => {
+        const productPrice = stateProduct.product.prices.filter(
+          (price) => price.currency.symbol === action.payload
+        );
+        totalPrice = (
+          Number(totalPrice) +
+          Number(productPrice[0].amount * stateProduct.quantity)
+        ).toFixed(2);
+      });
+      state.totalPrice = totalPrice;
+
+      return {
+        ...state,
+      };
+
+    case CART_OVERLAY_STATE:
+      return {
+        ...state,
+        cartOverlayState: !state.cartOverlayState,
       };
     default:
       return state;

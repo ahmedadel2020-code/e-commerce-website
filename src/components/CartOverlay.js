@@ -175,6 +175,7 @@ const ProductsTotalWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-right: 15px;
 `;
 
 const TotalTypography = styled.div`
@@ -187,7 +188,45 @@ const TotalPrice = styled.div`
   font-weight: 700;
 `;
 
+const CartButtonsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 34px;
+  padding-right: 15px;
+`;
+
+const ViewPageButton = styled.button`
+  border: 1px solid #1d1f22;
+  padding: 15px 32px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 14px;
+  background-color: #ffffff;
+  cursor: pointer;
+`;
+
+const CheckoutButton = styled.button`
+  border: none;
+  padding: 16px 32px;
+  text-transform: uppercase;
+  font-weight: 600;
+  background-color: #5ece7b;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+`;
 class CartOverlay extends Component {
+  constructor(props) {
+    super(props);
+
+    this.wrapperRef = React.createRef();
+
+    this.state = {
+      totalPrice: 0,
+    };
+  }
+
   handleIncreaseQuantity = (productId) => {
     const { dispatch, currencySymbol } = this.props;
 
@@ -207,6 +246,7 @@ class CartOverlay extends Component {
   render() {
     const { productsInCart, cartQuantity, currencySymbol, totalPrice } =
       this.props;
+    console.log(productsInCart);
     return (
       <Container>
         <CartQuantityTypography>My Bag,</CartQuantityTypography>
@@ -277,10 +317,18 @@ class CartOverlay extends Component {
             />
           </ProductWrapper>
         ))}
-        <ProductsTotalWrapper>
-          <TotalTypography>Total</TotalTypography>
-          <TotalPrice>{`${currencySymbol} ${totalPrice}`}</TotalPrice>
-        </ProductsTotalWrapper>
+        {cartQuantity > 0 && (
+          <>
+            <ProductsTotalWrapper>
+              <TotalTypography>Total</TotalTypography>
+              <TotalPrice>{`${currencySymbol} ${totalPrice}`}</TotalPrice>
+            </ProductsTotalWrapper>
+            <CartButtonsWrapper>
+              <ViewPageButton>View Bag</ViewPageButton>
+              <CheckoutButton>Check out</CheckoutButton>
+            </CartButtonsWrapper>
+          </>
+        )}
       </Container>
     );
   }

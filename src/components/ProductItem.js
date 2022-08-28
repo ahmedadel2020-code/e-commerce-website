@@ -92,11 +92,13 @@ class ProductItem extends Component {
       const foundedProduct = productsInCart.filter(
         (productInCart) => productInCart.product.id === newProduct.id
       );
-      if (foundedProduct.length === 0) {
-        dispatch(addProductToCart(newProduct));
+      if (foundedProduct.length === 0 && newProduct.attributes.length === 0) {
+        dispatch(addProductToCart({newProduct, selectedAttributes: {}}));
       }
     } else {
-      dispatch(addProductToCart(newProduct));
+      if (newProduct.attributes.length === 0) {
+        dispatch(addProductToCart({newProduct, selectedAttributes: {}}));
+      }
     }
   };
 

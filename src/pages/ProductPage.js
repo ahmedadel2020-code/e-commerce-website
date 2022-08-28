@@ -5,10 +5,24 @@ import { GET_PRODUCT } from "../queries/queries";
 import { withRouter } from "../Routes/withRouter";
 import ReactHtmlParser from "html-react-parser";
 import { connect } from "react-redux";
+import { addProductToCart } from "../actions/cart";
 
 const Container = styled.div`
   width: 90%;
   margin: 0 auto;
+`;
+
+const BodyOverlay = styled.div`
+  position: fixed;
+  display: ${(props) => (props.openOverlay ? "block" : "none")};
+  width: 100%;
+  height: 100%;
+  top: 8%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(57, 55, 72, 0.22);
+  z-index: 2;
 `;
 
 const ProductWrapper = styled.div`
@@ -31,20 +45,17 @@ const ProductSubImage = styled.img`
   object-fit: contain;
   margin-bottom: 15px;
   cursor: pointer;
-  /* border: 1px solid gray; */
 `;
 
 const ProductImage = styled.img`
   width: 50%;
   height: 640px;
-  /* border: 1px solid gray; */
   margin-right: 50px;
   object-fit: contain;
 `;
 
 const ProductDetails = styled.div`
   width: 25%;
-  /* border: 1px solid; */
 `;
 
 const ProductBrand = styled.div`
@@ -56,44 +67,6 @@ const ProductBrand = styled.div`
 const ProductName = styled.div`
   font-size: 30px;
   margin-bottom: 43px;
-`;
-
-const ProductAttributes = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  & .product-attributes:nth-child(${(props) => props.capacity?.attIndex}) {
-    & .product-items {
-      & .product-item:nth-child(${(props) => props.capacity?.itemIndex}) {
-        background-color: #1d1f22;
-        color: #ffffff;
-      }
-    }
-  }
-  & .product-attributes:nth-child(${(props) => props.touch?.attIndex}) {
-    & .product-items {
-      & .product-item:nth-child(${(props) => props.touch?.itemIndex}) {
-        background-color: #1d1f22;
-        color: #ffffff;
-      }
-    }
-  }
-  & .product-attributes:nth-child(${(props) => props.with?.attIndex}) {
-    & .product-items {
-      & .product-item:nth-child(${(props) => props.with?.itemIndex}) {
-        background-color: #1d1f22;
-        color: #ffffff;
-      }
-    }
-  }
-  & .product-attributes:nth-child(${(props) => props.size?.attIndex}) {
-    & .product-items {
-      & .product-item:nth-child(${(props) => props.size?.itemIndex}) {
-        background-color: #1d1f22;
-        color: #ffffff;
-      }
-    }
-  }
 `;
 
 const ProductAttributesWrapper = styled.div`
@@ -119,25 +92,32 @@ const ColorBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+`;
 
-  &:nth-child(${(props) => props.selectedColor}) {
+const ProductAttributeColorInput = styled.input`
+  display: none;
+  &:checked + label {
     border: 1px solid #5ece7b;
-    /* background-color: #5ece7b; */
-    & div {
-      border: ${(props) => props.isWhite && "none"};
-    }
   }
 `;
 
-const ProductAttributeColor = styled.div`
+const ProductAttributeColorLabel = styled.label`
   width: ${(props) => (props.isWhite ? "31px" : "32px")};
   height: ${(props) => (props.isWhite ? "31px" : "32px")};
   background-color: ${(props) => props.color};
   border: ${(props) => (props.isWhite ? "1px solid #000000" : "none")};
+  cursor: pointer;
 `;
 
-const ProductAttribute = styled.div`
+const ProductAttribute = styled.input`
+  display: none;
+  &:checked + label {
+    background-color: #1d1f22;
+    color: #ffffff;
+  }
+`;
+
+const ProductAttributeLabel = styled.label`
   font-family: "Source Sans Pro", sans-serif;
   width: 63px;
   height: 45px;
@@ -147,11 +127,6 @@ const ProductAttribute = styled.div`
   border: 1px solid #1d1f22;
   margin-right: 12px;
   cursor: pointer;
-
-  &:hover {
-    background-color: #1d1f22;
-    color: #ffffff;
-  }
 `;
 
 const ProductPriceTypography = styled.div`
@@ -177,6 +152,12 @@ const Button = styled.button`
   color: #ffffff;
   margin-bottom: 40px;
   cursor: pointer;
+
+  &:disabled {
+    color: #858585;
+    background-color: #00000029;
+    cursor: default;
+  }
 `;
 
 const ProductDescription = styled.div`
@@ -189,7 +170,6 @@ class ProductPage extends Component {
 
     this.state = {
       imageIndex: 0,
-      colorIndex: 0,
       selectedAttributes: {},
     };
   }
@@ -198,33 +178,45 @@ class ProductPage extends Component {
     this.setState({ imageIndex });
   };
 
-  handleSelectedItem = (e, attIndex, itemIndex, attributeName) => {
-    const attributeValue = e.target.innerText;
+  handleSelectedItem = (e, attributeName) => {
+    const attributeValue = e.target.defaultValue;
     this.setState({
       selectedAttributes: {
         ...this.state.selectedAttributes,
-        [attributeName.split(" ")[0].toLowerCase()]: {
-          value: attributeValue,
-          itemIndex: itemIndex + 1,
-          attIndex: attIndex + 1,
-        },
+        [attributeName]: attributeValue,
       },
     });
   };
 
-  handleSelectedColor = (itemIndex) => {
-    this.setState({ colorIndex: itemIndex + 1 });
+  handleAddProductToCart = (newProduct) => {
+    const { productsInCart, dispatch } = this.props;
+    const { selectedAttributes } = this.state;
+
+    if (productsInCart.length > 0) {
+      const foundedProduct = productsInCart.filter(
+        (productInCart) => productInCart.product.id === newProduct.id
+      );
+      if (foundedProduct.length === 0) {
+        dispatch(addProductToCart({ newProduct, selectedAttributes }));
+      }
+    } else {
+      dispatch(addProductToCart({ newProduct, selectedAttributes }));
+    }
   };
 
   render() {
     const { productId } = this.props.params;
-    const { currencySymbol } = this.props;
+    const { currencySymbol, cartOverlayState } = this.props;
 
     return (
       <Query query={GET_PRODUCT} variables={{ id: productId }}>
         {({ data, loading }) => {
           if (!loading) {
             const { product } = data;
+
+            const selectedAttributesSize = Object.keys(
+              this.state.selectedAttributes
+            ).length;
 
             const productPrice = product.prices.filter(
               (price) => price.currency.symbol === currencySymbol
@@ -234,6 +226,8 @@ class ProductPage extends Component {
 
             return (
               <Container>
+                <BodyOverlay openOverlay={cartOverlayState}></BodyOverlay>
+
                 <ProductWrapper>
                   <ProductSubImages>
                     {product.gallery.map((productImg, index) => (
@@ -252,62 +246,64 @@ class ProductPage extends Component {
                   <ProductDetails>
                     <ProductBrand>{product.brand}</ProductBrand>
                     <ProductName>{product.name}</ProductName>
-                    <ProductAttributes
-                      capacity={this.state.selectedAttributes.capacity}
-                      touch={this.state.selectedAttributes.touch}
-                      with={this.state.selectedAttributes.with}
-                      size={this.state.selectedAttributes.size}
-                    >
-                      {product.attributes.map((attribute, attIndex) => (
-                        <ProductAttributesWrapper
-                          key={attribute.id}
-                          className="product-attributes"
-                        >
-                          <ProductAttributeType>
-                            {attribute.id}:
-                          </ProductAttributeType>
-                          <ProductItemsWrapper className="product-items">
-                            {attribute.items.map((item, itemIndex) =>
-                              attribute.type === "swatch" ? (
-                                <ColorBox
-                                  key={item.id}
-                                  className="product-color"
-                                  onClick={() =>
-                                    this.handleSelectedColor(itemIndex)
-                                  }
-                                  selectedColor={this.state.colorIndex}
+                    {product.attributes.map((attribute, attIndex) => (
+                      <ProductAttributesWrapper key={attribute.id}>
+                        <ProductAttributeType>
+                          {attribute.id}:
+                        </ProductAttributeType>
+                        <ProductItemsWrapper className="product-items">
+                          {attribute.items.map((item, itemIndex) =>
+                            attribute.type === "swatch" ? (
+                              <ColorBox
+                                key={item.id}
+                                onClick={(e) =>
+                                  this.handleSelectedItem(e, attribute.id)
+                                }
+                              >
+                                <ProductAttributeColorInput
+                                  type="radio"
+                                  value={item.value}
+                                  id={`${item.id}-${itemIndex}-${attIndex}`}
+                                  name={`attribute-${attIndex}`}
+                                />
+                                <ProductAttributeColorLabel
                                   isWhite={item.value === "#FFFFFF"}
-                                >
-                                  <ProductAttributeColor
-                                    color={item.value}
-                                    isWhite={item.value === "#FFFFFF"}
-                                  ></ProductAttributeColor>
-                                </ColorBox>
-                              ) : (
+                                  color={item.value}
+                                  htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                                ></ProductAttributeColorLabel>
+                              </ColorBox>
+                            ) : (
+                              <div key={item.id}>
                                 <ProductAttribute
-                                  className="product-item"
-                                  key={item.id}
+                                  type="radio"
+                                  value={item.value}
+                                  id={`${item.id}-${itemIndex}-${attIndex}`}
+                                  name={`attribute-${attIndex}`}
                                   onClick={(e) =>
-                                    this.handleSelectedItem(
-                                      e,
-                                      attIndex,
-                                      itemIndex,
-                                      attribute.id
-                                    )
+                                    this.handleSelectedItem(e, attribute.id)
                                   }
-                                  selectedItem={this.state.itemIndex}
+                                />
+                                <ProductAttributeLabel
+                                  htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
                                 >
                                   {item.value}
-                                </ProductAttribute>
-                              )
-                            )}
-                          </ProductItemsWrapper>
-                        </ProductAttributesWrapper>
-                      ))}
-                    </ProductAttributes>
+                                </ProductAttributeLabel>
+                              </div>
+                            )
+                          )}
+                        </ProductItemsWrapper>
+                      </ProductAttributesWrapper>
+                    ))}
                     <ProductPriceTypography>Price:</ProductPriceTypography>
                     <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
-                    <Button>Add to Cart</Button>
+                    <Button
+                      disabled={
+                        selectedAttributesSize !== product.attributes.length
+                      }
+                      onClick={() => this.handleAddProductToCart(product)}
+                    >
+                      Add to Cart
+                    </Button>
                     <ProductDescription>
                       {ReactHtmlParser(productDescriptionHtml)}
                     </ProductDescription>
@@ -322,8 +318,12 @@ class ProductPage extends Component {
   }
 }
 
-function mapStateToProps({ currency }) {
-  return { currencySymbol: currency.currencySymbol };
+function mapStateToProps({ currency, cart }) {
+  return {
+    currencySymbol: currency.currencySymbol,
+    productsInCart: cart.products,
+    cartOverlayState: cart.cartOverlayState,
+  };
 }
 
 export default connect(mapStateToProps)(withRouter(ProductPage));

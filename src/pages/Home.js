@@ -4,6 +4,7 @@ import { Query } from "@apollo/client/react/components";
 import { GET_CATEGORY } from "../queries/queries";
 import { withRouter } from "../Routes/withRouter";
 import ProductItem from "../components/ProductItem";
+import { connect } from "react-redux";
 
 const Container = styled.div`
   width: 90%;
@@ -42,12 +43,12 @@ class Home extends Component {
     this.state = {
       category: "all",
       selectedCurrency: "$",
-      cartState: false,
     };
   }
 
   render() {
     const { categoryName } = this.props.params;
+    const { cartOverlayState } = this.props;
 
     return (
       <Query
@@ -58,7 +59,7 @@ class Home extends Component {
           if (!loading) {
             return (
               <Container>
-                <BodyOverlay openOverlay={this.state.cartState}></BodyOverlay>
+                <BodyOverlay openOverlay={cartOverlayState}></BodyOverlay>
                 <CategoryParagraph>{data.category.name}</CategoryParagraph>
                 <CategoryContainer>
                   {data.category.products.map((product) => (
@@ -78,4 +79,10 @@ class Home extends Component {
   }
 }
 
-export default withRouter(Home);
+function mapStateToProps({ cart }) {
+  return {
+    cartOverlayState: cart.cartOverlayState,
+  };
+}
+
+export default connect(mapStateToProps)(withRouter(Home));

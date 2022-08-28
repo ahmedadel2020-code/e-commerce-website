@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import ProductPage from "./pages/ProductPage";
+import { connect } from "react-redux";
 
 const Container = styled.div`
   overflow: ${(props) => (props.overlayState ? "hidden" : "auto")};
@@ -12,26 +13,14 @@ const Container = styled.div`
 `;
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      overlayState: false,
-    };
-  }
-  onReceiveOverlayState = (overlayState) => {
-    this.setState({ overlayState });
-  };
   render() {
+    const { cartOverlayState } = this.props;
     return (
-      <Container overlayState={this.state.overlayState}>
+      <Container overlayState={cartOverlayState}>
         <BrowserRouter>
           <Navbar />
           <Routes>
-            <Route
-              path="/"
-              element={<Home onSendOverlayState={this.onReceiveOverlayState} />}
-            />
+            <Route path="/" element={<Home />} />
             <Route path="category/:categoryName" element={<Home />} />
             <Route path="product/:productId" element={<ProductPage />} />
           </Routes>
@@ -41,4 +30,10 @@ class App extends Component {
   }
 }
 
-export default App;
+function mapStateToProps({ cart }) {
+  return {
+    cartOverlayState: cart.cartOverlayState,
+  };
+}
+
+export default connect(mapStateToProps)(App);

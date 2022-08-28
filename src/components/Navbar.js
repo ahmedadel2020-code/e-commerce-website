@@ -12,6 +12,7 @@ import CartOverlay from "./CartOverlay";
 import { withRouter } from "../Routes/withRouter";
 import { connect } from "react-redux";
 import { getSelectedCurrencySymbol } from "../actions/currency";
+import { cartOverlayState, getTotalPrice } from "../actions/cart";
 
 const Container = styled.div`
   height: 80px;
@@ -80,6 +81,7 @@ const DropdownList = styled.div`
   transform: translate(-10%, 20%);
   box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);
   z-index: 5;
+  background-color: #ffffff;
 `;
 
 const DropdownListItem = styled.div`
@@ -143,7 +145,6 @@ class Navbar extends Component {
       openDropdown: false,
       currencyId: 1,
       categoryId: 1,
-      openCart: false,
     };
   }
 
@@ -167,11 +168,14 @@ class Navbar extends Component {
   };
 
   handleSelectCurrency = (currency, index) => {
+    const { dispatch } = this.props;
+
     this.setState({
       currencyId: index + 1,
       openDropdown: false,
     });
-    this.props.dispatch(getSelectedCurrencySymbol(currency));
+    dispatch(getSelectedCurrencySymbol(currency));
+    dispatch(getTotalPrice(currency));
   };
 
   handleCategory = (categoryName, index) => {
@@ -180,14 +184,13 @@ class Navbar extends Component {
   };
 
   handleCartState = () => {
-    this.setState((prevState) => ({ openCart: !prevState.openCart }));
+    this.props.dispatch(cartOverlayState());
   };
-
 
   render() {
     const { categories, loading: loadingOne } = this.props.getCategories;
     const { currencies, loading: loadingTwo } = this.props.getCurrencies;
-    const { currencySymbol, cartQuantity } = this.props;
+    const { currencySymbol, cartQuantity, cartOverlayState } = this.props;
 
     return (
       <Container>
@@ -229,11 +232,11 @@ class Navbar extends Component {
                 ))}
             </DropdownList>
           </DropDownContainer>
-          <Cart onClick={this.handleCartState}>
-            <CartImage src={cart} alt="cart" />
+          <Cart>
+            <CartImage src={cart} alt="cart" onClick={this.handleCartState} />
             <CartQuantity>{cartQuantity}</CartQuantity>
           </Cart>
-          {this.state.openCart && <CartOverlay />}
+          {cartOverlayState && <CartOverlay />}
         </Right>
       </Container>
     );
@@ -244,6 +247,7 @@ function mapStateToProps({ currency, cart }) {
   return {
     currencySymbol: currency.currencySymbol,
     cartQuantity: cart.cartQuantity,
+    cartOverlayState: cart.cartOverlayState,
   };
 }
 
