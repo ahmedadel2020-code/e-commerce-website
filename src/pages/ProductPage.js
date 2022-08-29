@@ -29,7 +29,6 @@ const ProductWrapper = styled.div`
   display: flex;
   align-items: flex-start;
   margin-top: 40px;
-  margin-left: 40px;
 `;
 
 const ProductSubImages = styled.div`
@@ -180,6 +179,7 @@ class ProductPage extends Component {
 
   handleSelectedItem = (e, attributeName) => {
     const attributeValue = e.target.defaultValue;
+
     this.setState({
       selectedAttributes: {
         ...this.state.selectedAttributes,
@@ -194,14 +194,18 @@ class ProductPage extends Component {
 
     if (productsInCart.length > 0) {
       const foundedProduct = productsInCart.filter(
-        (productInCart) => productInCart.product.id === newProduct.id
+        (productInCart) =>
+          JSON.stringify(productInCart.selectedAttributes) ===
+          JSON.stringify(selectedAttributes)
       );
+
       if (foundedProduct.length === 0) {
         dispatch(addProductToCart({ newProduct, selectedAttributes }));
       }
     } else {
       dispatch(addProductToCart({ newProduct, selectedAttributes }));
     }
+    this.setState({ selectedAttributes: {} });
   };
 
   render() {
@@ -254,17 +258,20 @@ class ProductPage extends Component {
                         <ProductItemsWrapper className="product-items">
                           {attribute.items.map((item, itemIndex) =>
                             attribute.type === "swatch" ? (
-                              <ColorBox
-                                key={item.id}
-                                onClick={(e) =>
-                                  this.handleSelectedItem(e, attribute.id)
-                                }
-                              >
+                              <ColorBox key={item.id}>
                                 <ProductAttributeColorInput
                                   type="radio"
                                   value={item.value}
                                   id={`${item.id}-${itemIndex}-${attIndex}`}
                                   name={`attribute-${attIndex}`}
+                                  checked={
+                                    this.state.selectedAttributes[
+                                      `${attribute.id}`
+                                    ] === item.value
+                                  }
+                                  onChange={(e) =>
+                                    this.handleSelectedItem(e, attribute.id)
+                                  }
                                 />
                                 <ProductAttributeColorLabel
                                   isWhite={item.value === "#FFFFFF"}
@@ -279,8 +286,13 @@ class ProductPage extends Component {
                                   value={item.value}
                                   id={`${item.id}-${itemIndex}-${attIndex}`}
                                   name={`attribute-${attIndex}`}
-                                  onClick={(e) =>
+                                  onChange={(e) =>
                                     this.handleSelectedItem(e, attribute.id)
+                                  }
+                                  checked={
+                                    this.state.selectedAttributes[
+                                      `${attribute.id}`
+                                    ] === item.value
                                   }
                                 />
                                 <ProductAttributeLabel

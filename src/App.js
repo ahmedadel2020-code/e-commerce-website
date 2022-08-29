@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import ProductPage from "./pages/ProductPage";
 import { connect } from "react-redux";
+import CartPage from "./pages/CartPage";
 
 const Container = styled.div`
   overflow: ${(props) => (props.overlayState ? "hidden" : "auto")};
@@ -23,6 +24,7 @@ class App extends Component {
             <Route path="/" element={<Home />} />
             <Route path="category/:categoryName" element={<Home />} />
             <Route path="product/:productId" element={<ProductPage />} />
+            <Route path="cart" element={<CartPage />} />
           </Routes>
         </BrowserRouter>
       </Container>

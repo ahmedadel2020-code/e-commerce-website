@@ -27,13 +27,11 @@ const BodyOverlay = styled.div`
 const CategoryContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(3, auto);
-  justify-items: center;
 `;
 
 const CategoryParagraph = styled.p`
   font-size: 42px;
   text-transform: uppercase;
-  margin-left: 40px;
 `;
 
 class Home extends Component {

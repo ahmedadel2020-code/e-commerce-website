@@ -30,7 +30,7 @@ export const getTotalPrice = (payload) => ({
   payload,
 });
 
-export const cartOverlayState = (payload) => ({
+export const changeCartOverlayState = (payload) => ({
   type: CART_OVERLAY_STATE,
   payload,
 });

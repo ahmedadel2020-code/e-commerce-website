@@ -12,7 +12,7 @@ import CartOverlay from "./CartOverlay";
 import { withRouter } from "../Routes/withRouter";
 import { connect } from "react-redux";
 import { getSelectedCurrencySymbol } from "../actions/currency";
-import { cartOverlayState, getTotalPrice } from "../actions/cart";
+import { changeCartOverlayState, getTotalPrice } from "../actions/cart";
 
 const Container = styled.div`
   height: 80px;
@@ -26,12 +26,11 @@ const Left = styled.div`
   flex: 1;
 `;
 
-const CategoryItems = styled.ul`
-  list-style-type: none;
+const CategoryItems = styled.div`
   display: flex;
 `;
 
-const CategoryItem = styled.li`
+const CategoryItem = styled.div`
   text-transform: uppercase;
   font-size: 16px;
   font-weight: 600;
@@ -71,6 +70,7 @@ const Right = styled.div`
 const DropDownContainer = styled.div`
   display: flex;
   position: relative;
+  margin-right: 20px;
 `;
 
 const DropdownList = styled.div`
@@ -107,7 +107,6 @@ const Cart = styled.div`
 `;
 
 const CartImage = styled.img`
-  margin-left: 32px;
   cursor: pointer;
 `;
 
@@ -140,6 +139,7 @@ class Navbar extends Component {
     super(props);
 
     this.wrapperRef = React.createRef();
+    this.cartRef = React.createRef();
 
     this.state = {
       openDropdown: false,
@@ -149,17 +149,24 @@ class Navbar extends Component {
   }
 
   componentDidMount() {
-    document.addEventListener("mousedown", this.handleClickOutside);
-    this.setState({ cartQuantity: this.props.cartQuantity });
+    document.addEventListener("mousedown", this.handleClickOutsideDropdown);
+    document.addEventListener("mousedown", this.handleClickOutsideCart);
   }
 
   componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleClickOutside);
+    document.removeEventListener("mousedown", this.handleClickOutsideDropdown);
+    document.removeEventListener("mousedown", this.handleClickOutsideCart);
   }
 
-  handleClickOutside = (event) => {
+  handleClickOutsideDropdown = (event) => {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
       this.setState({ openDropdown: false });
+    }
+  };
+
+  handleClickOutsideCart = (event) => {
+    if (this.cartRef && !this.cartRef.current.contains(event.target)) {
+      this.props.dispatch(changeCartOverlayState(false));
     }
   };
 
@@ -184,7 +191,7 @@ class Navbar extends Component {
   };
 
   handleCartState = () => {
-    this.props.dispatch(cartOverlayState());
+    this.props.dispatch(changeCartOverlayState(!this.props.cartOverlayState));
   };
 
   render() {
@@ -232,8 +239,8 @@ class Navbar extends Component {
                 ))}
             </DropdownList>
           </DropDownContainer>
-          <Cart>
-            <CartImage src={cart} alt="cart" onClick={this.handleCartState} />
+          <Cart onClick={this.handleCartState} ref={this.cartRef}>
+            <CartImage src={cart} alt="cart" />
             <CartQuantity>{cartQuantity}</CartQuantity>
           </Cart>
           {cartOverlayState && <CartOverlay />}

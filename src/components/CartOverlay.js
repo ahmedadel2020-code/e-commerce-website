@@ -6,6 +6,7 @@ import {
   incrementProductQuantity,
   removeProductFromCart,
 } from "../actions/cart";
+import { withRouter } from "../Routes/withRouter";
 
 const Container = styled.div`
   position: absolute;
@@ -86,26 +87,36 @@ const ColorBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+`;
 
-  &:first-child {
+const ProductAttributeColorInput = styled.input`
+  display: none;
+  &:checked + label {
     border: 1px solid #5ece7b;
   }
 `;
 
-const ProductAttributeColor = styled.div`
+const ProductAttributeColorLabel = styled.label`
   width: ${(props) => (props.isWhite ? "15px" : "16px")};
   height: ${(props) => (props.isWhite ? "15px" : "16px")};
   background-color: ${(props) => props.color};
   border: ${(props) => (props.isWhite ? "1px solid #000000" : "none")};
+  cursor: pointer;
 `;
 
-const ProductAttribute = styled.div`
+const ProductAttribute = styled.input`
+  display: none;
+  &:checked + label {
+    background-color: #1d1f22;
+    color: #ffffff;
+  }
+`;
+
+const ProductAttributeLabel = styled.label`
   font-family: "Source Sans Pro", sans-serif;
   font-weight: 400;
   font-size: 14px;
-  width: 24px;
-  height: 24px;
+  padding: 5px;
 
   display: flex;
   align-items: center;
@@ -113,11 +124,6 @@ const ProductAttribute = styled.div`
   border: 1px solid #1d1f22;
   margin-right: 12px;
   cursor: pointer;
-
-  &:first-child {
-    background-color: #1d1f22;
-    color: #ffffff;
-  }
 `;
 
 const QuantityWrapper = styled.div`
@@ -217,42 +223,50 @@ const CheckoutButton = styled.button`
   cursor: pointer;
 `;
 class CartOverlay extends Component {
-  constructor(props) {
-    super(props);
-
-    this.wrapperRef = React.createRef();
-
-    this.state = {
-      totalPrice: 0,
-    };
-  }
-
-  handleIncreaseQuantity = (productId) => {
+  handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 
-    dispatch(incrementProductQuantity({ productId, currencySymbol }));
+    dispatch(
+      incrementProductQuantity({
+        productId,
+        currencySymbol,
+        selectedAttributes,
+      })
+    );
   };
 
-  handleDecreaseQuantity = (productId, quantity) => {
+  handleDecreaseQuantity = (productId, quantity, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 
     if (quantity > 1) {
-      dispatch(decrementProductQuantity({ productId, currencySymbol }));
+      dispatch(
+        decrementProductQuantity({
+          productId,
+          currencySymbol,
+          selectedAttributes,
+        })
+      );
     } else {
-      dispatch(removeProductFromCart({ productId, currencySymbol }));
+      dispatch(
+        removeProductFromCart({ productId, currencySymbol, selectedAttributes })
+      );
     }
+  };
+
+  handleNavigateToCartPage = () => {
+    this.props.navigate("/cart");
   };
 
   render() {
     const { productsInCart, cartQuantity, currencySymbol, totalPrice } =
       this.props;
-    console.log(productsInCart);
+
     return (
       <Container>
         <CartQuantityTypography>My Bag,</CartQuantityTypography>
         <CartQuantity>{cartQuantity} items</CartQuantity>
-        {productsInCart.map((productInCart) => (
-          <ProductWrapper key={productInCart.product.id}>
+        {productsInCart.map((productInCart, prIndex) => (
+          <ProductWrapper key={prIndex}>
             <ProductDetails>
               <ProductBrand>{productInCart.product.brand}</ProductBrand>
               <ProductName>{productInCart.product.name}</ProductName>
@@ -265,25 +279,51 @@ class CartOverlay extends Component {
                   )
               )}
               <ProductAttributes>
-                {productInCart.product.attributes.map((attribute) => (
+                {productInCart.product.attributes.map((attribute, attIndex) => (
                   <ProductAttributesWrapper key={attribute.id}>
                     <ProductAttributeType>{attribute.id}:</ProductAttributeType>
                     <ProductItemsWrapper>
-                      {attribute.items.map((item) =>
+                      {attribute.items.map((item, itemIndex) =>
                         attribute.type === "swatch" ? (
-                          <ColorBox
-                            key={item.id}
-                            isWhite={item.value === "#FFFFFF"}
-                          >
-                            <ProductAttributeColor
-                              color={item.value}
+                          <ColorBox key={item.id}>
+                            <ProductAttributeColorInput
+                              type="radio"
+                              value={item.value}
+                              id={`${item.id}-${itemIndex}-${attIndex}`}
+                              name={`product-${prIndex}-attribute-${attIndex}`}
+                              checked={
+                                productInCart.selectedAttributes[
+                                  `${attribute.id}`
+                                ] === item.value
+                              }
+                              readOnly
+                            />
+                            <ProductAttributeColorLabel
                               isWhite={item.value === "#FFFFFF"}
-                            ></ProductAttributeColor>
+                              color={item.value}
+                              htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                            ></ProductAttributeColorLabel>
                           </ColorBox>
                         ) : (
-                          <ProductAttribute key={item.id}>
-                            {item.value}
-                          </ProductAttribute>
+                          <div key={item.id}>
+                            <ProductAttribute
+                              type="radio"
+                              value={item.value}
+                              id={`${item.id}-${itemIndex}-${attIndex}`}
+                              name={`product-${prIndex}-attribute-${attIndex}`}
+                              checked={
+                                productInCart.selectedAttributes[
+                                  `${attribute.id}`
+                                ] === item.value
+                              }
+                              readOnly
+                            />
+                            <ProductAttributeLabel
+                              htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                            >
+                              {item.value}
+                            </ProductAttributeLabel>
+                          </div>
                         )
                       )}
                     </ProductItemsWrapper>
@@ -294,7 +334,10 @@ class CartOverlay extends Component {
             <QuantityWrapper>
               <IncreaseQuantity
                 onClick={() =>
-                  this.handleIncreaseQuantity(productInCart.product.id)
+                  this.handleIncreaseQuantity(
+                    productInCart.product.id,
+                    productInCart.selectedAttributes
+                  )
                 }
               >
                 +
@@ -304,7 +347,8 @@ class CartOverlay extends Component {
                 onClick={() =>
                   this.handleDecreaseQuantity(
                     productInCart.product.id,
-                    productInCart.quantity
+                    productInCart.quantity,
+                    productInCart.selectedAttributes
                   )
                 }
               >
@@ -324,7 +368,9 @@ class CartOverlay extends Component {
               <TotalPrice>{`${currencySymbol} ${totalPrice}`}</TotalPrice>
             </ProductsTotalWrapper>
             <CartButtonsWrapper>
-              <ViewPageButton>View Bag</ViewPageButton>
+              <ViewPageButton onClick={this.handleNavigateToCartPage}>
+                View Bag
+              </ViewPageButton>
               <CheckoutButton>Check out</CheckoutButton>
             </CartButtonsWrapper>
           </>
@@ -342,4 +388,4 @@ function mapStateToProps({ currency, cart }) {
   };
 }
 
-export default connect(mapStateToProps)(CartOverlay);
+export default connect(mapStateToProps)(withRouter(CartOverlay));

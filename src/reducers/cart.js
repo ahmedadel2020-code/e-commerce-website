@@ -40,33 +40,48 @@ const cart = (state = initialState, action) => {
     case REMOVE_PRODUCT_FROM_CART:
       state.products.forEach((stateProduct) => {
         if (stateProduct.product.id === action.payload.productId) {
-          const productPrice = stateProduct.product.prices.filter(
-            (price) => price.currency.symbol === action.payload.currencySymbol
-          );
-          state.totalPrice = (
-            Number(state.totalPrice) - Number(productPrice[0].amount)
-          ).toFixed(2);
+          if (
+            JSON.stringify(stateProduct.selectedAttributes) ===
+            JSON.stringify(action.payload.selectedAttributes)
+          ) {
+            const productPrice = stateProduct.product.prices.filter(
+              (price) => price.currency.symbol === action.payload.currencySymbol
+            );
+            state.totalPrice = (
+              Number(state.totalPrice) - Number(productPrice[0].amount)
+            ).toFixed(2);
+          }
         }
       });
       return {
         ...state,
-        products: state.products.filter(
-          (stateProduct) => stateProduct.product.id !== action.payload.productId
-        ),
+        products: state.products.filter((stateProduct) => {
+          if (
+            JSON.stringify(stateProduct.selectedAttributes) !==
+            JSON.stringify(action.payload.selectedAttributes)
+          ) {
+            return stateProduct;
+          }
+          return stateProduct.product.id !== action.payload.productId;
+        }),
         cartQuantity: state.cartQuantity - 1,
       };
 
     case INCREMENT_PRODUCT_QUANTITY:
-      console.log(action.payload.currencySymbol);
       state.products.forEach((stateProduct) => {
         if (stateProduct.product.id === action.payload.productId) {
-          stateProduct.quantity += 1;
-          const productPrice = stateProduct.product.prices.filter(
-            (price) => price.currency.symbol === action.payload.currencySymbol
-          );
-          state.totalPrice = (
-            Number(state.totalPrice) + Number(productPrice[0].amount)
-          ).toFixed(2);
+          if (
+            JSON.stringify(stateProduct.selectedAttributes) ===
+            JSON.stringify(action.payload.selectedAttributes)
+          ) {
+            stateProduct.quantity += 1;
+            const productPrice = stateProduct.product.prices.filter(
+              (price) => price.currency.symbol === action.payload.currencySymbol
+            );
+            state.totalPrice = (
+              Number(state.totalPrice) + Number(productPrice[0].amount)
+            ).toFixed(2);
+          }
         }
       });
 
@@ -78,13 +93,18 @@ const cart = (state = initialState, action) => {
     case DECREMENT_PRODUCT_QUANTITY:
       state.products.forEach((stateProduct) => {
         if (stateProduct.product.id === action.payload.productId) {
-          stateProduct.quantity -= 1;
-          const productPrice = stateProduct.product.prices.filter(
-            (price) => price.currency.symbol === action.payload.currencySymbol
-          );
-          state.totalPrice = (
-            Number(state.totalPrice) - Number(productPrice[0].amount)
-          ).toFixed(2);
+          if (
+            JSON.stringify(stateProduct.selectedAttributes) ===
+            JSON.stringify(action.payload.selectedAttributes)
+          ) {
+            stateProduct.quantity -= 1;
+            const productPrice = stateProduct.product.prices.filter(
+              (price) => price.currency.symbol === action.payload.currencySymbol
+            );
+            state.totalPrice = (
+              Number(state.totalPrice) - Number(productPrice[0].amount)
+            ).toFixed(2);
+          }
         }
       });
       return {
@@ -113,7 +133,7 @@ const cart = (state = initialState, action) => {
     case CART_OVERLAY_STATE:
       return {
         ...state,
-        cartOverlayState: !state.cartOverlayState,
+        cartOverlayState: action.payload,
       };
     default:
       return state;
