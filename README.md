@@ -11,13 +11,13 @@
 - You will be able to see more details about the product.
 - You can add the product to your cart.
 - You can display the product price with different currencies.
-- You can increase or decrease product count.
+- You can increase or decrease product Quantity.
 
 ## Technologies Used
 - React js.
 - Redux.
-- Styled Components.
-- React Router Dom
+- Styled-Components.
+- React-Router-Dom
 
 ## Setup
 This project is running on Node js environment, so you have to setup it before use the project.
@@ -26,7 +26,7 @@ This project is running on Node js environment, so you have to setup it before u
 ## Usage
 To install the project and use it:
 - Clone the project.
-- Go to the root of project. 
+- Go to the root of your project. 
 ```
 cd  e-commerce-website
 ```
