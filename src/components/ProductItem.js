@@ -12,14 +12,12 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 100px;
-  cursor: pointer;
-
+  cursor: ${(props) => (props.inStock ? "pointer" : "default")};
+  opacity: ${(props) => (props.inStock ? "1" : "0.5")};
   &:hover {
     box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);
   }
 `;
-
-const ProductContentWrapper = styled.div``;
 
 const ProductImage = styled.img`
   height: 330px;
@@ -57,7 +55,18 @@ const ImageWithCartWrapper = styled.div`
   margin-bottom: 30px;
 `;
 
-const ProductCart = styled.img``;
+const ImageWrapper = styled.div`
+  position: relative;
+`;
+
+const OutOfTheStock = styled.div`
+  position: absolute;
+  font-size: 24px;
+  color: #8d8f9a;
+  top: 45%;
+  left: 15%;
+  text-transform: uppercase;
+`;
 
 class ProductItem extends Component {
   constructor(props) {
@@ -82,7 +91,7 @@ class ProductItem extends Component {
 
     const dataValue = e.target.getAttribute("data-value");
 
-    if (dataValue === "parent") {
+    if (dataValue === "parent" && product.inStock) {
       this.props.navigate(`/product/${product.id}/${product.category}`);
     }
   };
@@ -113,25 +122,33 @@ class ProductItem extends Component {
         onMouseEnter={this.handleShowCart}
         onMouseLeave={this.handleHideCart}
         onClick={this.handleShowProductDetails}
+        inStock={product.inStock}
       >
-        <ProductContentWrapper>
+        <div>
           <ImageWithCartWrapper>
-            <ProductImage
-              src={product.gallery[0]}
-              alt={product.name}
-              data-value="parent"
-            />
-            <Cart
-              cartState={this.state.showCart}
-              onClick={() => this.handleAddProductToCart(product)}
-              data-value="child"
-            >
-              <ProductCart src={whiteCart} alt="cart" />
-            </Cart>
+            <ImageWrapper>
+              <ProductImage
+                src={product.gallery[0]}
+                alt={product.name}
+                data-value="parent"
+              />
+              {!product.inStock && (
+                <OutOfTheStock>Out of the stock</OutOfTheStock>
+              )}
+            </ImageWrapper>
+            {product.inStock && (
+              <Cart
+                cartState={this.state.showCart}
+                onClick={() => this.handleAddProductToCart(product)}
+                data-value="child"
+              >
+                <img src={whiteCart} alt="cart" />
+              </Cart>
+            )}
           </ImageWithCartWrapper>
           <ProductName>{`${product.brand} ${product.name}`}</ProductName>
           <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
-        </ProductContentWrapper>
+        </div>
       </Container>
     );
   }

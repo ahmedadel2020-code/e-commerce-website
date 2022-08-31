@@ -7,6 +7,8 @@ import {
   removeProductFromCart,
 } from "../actions/cart";
 
+import ImageSlider from "../components/ImageSlider";
+
 const Container = styled.div`
   width: 90%;
   margin: 0 auto;
@@ -197,12 +199,6 @@ const DecreaseQuantity = styled.div`
   }
 `;
 
-const ProductImage = styled.img`
-  width: 200px;
-  object-fit: contain;
-  margin-left: 24px;
-`;
-
 const ProductDivider = styled.hr`
   background-color: #e5e5e5;
   height: 1px;
@@ -248,6 +244,7 @@ const OrderButton = styled.button`
 `;
 
 class CartPage extends Component {
+
   handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 
@@ -286,7 +283,7 @@ class CartPage extends Component {
       cartOverlayState,
       cartQuantity,
     } = this.props;
-    console.log(productsInCart);
+
     return (
       <Container>
         <BodyOverlay openOverlay={cartOverlayState}></BodyOverlay>
@@ -388,10 +385,7 @@ class CartPage extends Component {
                     -
                   </DecreaseQuantity>
                 </QuantityWrapper>
-                <ProductImage
-                  src={productInCart.product.gallery[0]}
-                  alt={productInCart.product.name}
-                />
+                <ImageSlider product={productInCart.product} />
               </ProductControl>
             </ProductWrapper>
             <ProductDivider />

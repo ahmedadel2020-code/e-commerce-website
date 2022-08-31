@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import { Query } from "@apollo/client/react/components";
-import { GET_CATEGORY } from "../queries/queries";
+import { GET_CATEGORY } from "../GraphQl/queries";
 import { withRouter } from "../Routes/withRouter";
 import ProductItem from "../components/ProductItem";
 import { connect } from "react-redux";
@@ -36,14 +36,6 @@ const CategoryParagraph = styled.p`
 `;
 
 class Home extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      selectedCurrency: "$",
-    };
-  }
-
   componentDidMount() {
     const { categoryName } = this.props.params;
     this.props.dispatch(getCategoryName(categoryName));

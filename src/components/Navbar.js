@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import { graphql } from "@apollo/client/react/hoc";
-import { getCategories, getCurrencies } from "../queries/queries";
+import { GET_CATEGORIES, GET_CURRENCIES } from "../GraphQl/queries";
 import { flowRight as compose } from "lodash";
 
 import logo from "../assets/logo.svg";
@@ -261,8 +261,8 @@ function mapStateToProps({ currency, cart, category }) {
 export default connect(mapStateToProps)(
   withRouter(
     compose(
-      graphql(getCategories, { name: "getCategories" }),
-      graphql(getCurrencies, { name: "getCurrencies" })
+      graphql(GET_CATEGORIES, { name: "getCategories" }),
+      graphql(GET_CURRENCIES, { name: "getCurrencies" })
     )(Navbar)
   )
 );

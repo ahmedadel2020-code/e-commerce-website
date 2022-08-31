@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import {
+  changeCartOverlayState,
   decrementProductQuantity,
   incrementProductQuantity,
   removeProductFromCart,
@@ -40,10 +41,14 @@ const ProductWrapper = styled.div`
 
 const ProductBrand = styled.div`
   margin-bottom: 10px;
+  font-weight: 300;
+  font-size: 16px;
 `;
 
 const ProductName = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 4px;
+  font-weight: 300;
+  font-size: 16px;
 `;
 
 const ProductDetails = styled.div`
@@ -51,7 +56,7 @@ const ProductDetails = styled.div`
   margin-right: 5px;
 `;
 
-const ProductPrice = styled.div`
+const ProductPrice = styled.p`
   font-weight: 500;
   margin-bottom: 15px;
 `;
@@ -101,7 +106,6 @@ const ProductAttributeColorLabel = styled.label`
   height: ${(props) => (props.isWhite ? "15px" : "16px")};
   background-color: ${(props) => props.color};
   border: ${(props) => (props.isWhite ? "1px solid #000000" : "none")};
-  cursor: pointer;
 `;
 
 const ProductAttribute = styled.input`
@@ -116,14 +120,20 @@ const ProductAttributeLabel = styled.label`
   font-family: "Source Sans Pro", sans-serif;
   font-weight: 400;
   font-size: 14px;
-  padding: 5px;
+  width: ${(props) =>
+    props.itemValue === "512GB" || props.itemValue === "256GB"
+      ? "45px"
+      : "24px"};
+  height: ${(props) =>
+    props.itemValue === "512GB" || props.itemValue === "256GB"
+      ? "30px"
+      : "24px"};
 
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #1d1f22;
   margin-right: 12px;
-  cursor: pointer;
 `;
 
 const QuantityWrapper = styled.div`
@@ -223,8 +233,6 @@ const CheckoutButton = styled.button`
   cursor: pointer;
 `;
 class CartOverlay extends Component {
-
-  
   handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 
@@ -257,6 +265,7 @@ class CartOverlay extends Component {
 
   handleNavigateToCartPage = () => {
     this.props.navigate("/cart");
+    this.props.dispatch(changeCartOverlayState(false));
   };
 
   render() {
@@ -322,6 +331,7 @@ class CartOverlay extends Component {
                             />
                             <ProductAttributeLabel
                               htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                              itemValue={item.value}
                             >
                               {item.value}
                             </ProductAttributeLabel>

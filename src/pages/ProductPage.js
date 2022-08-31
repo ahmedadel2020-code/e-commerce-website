@@ -1,7 +1,7 @@
 import { Query } from "@apollo/client/react/components";
 import React, { Component } from "react";
 import styled from "styled-components";
-import { GET_PRODUCT } from "../queries/queries";
+import { GET_PRODUCT } from "../GraphQl/queries";
 import { withRouter } from "../Routes/withRouter";
 import ReactHtmlParser from "html-react-parser";
 import { connect } from "react-redux";
