@@ -223,6 +223,8 @@ const CheckoutButton = styled.button`
   cursor: pointer;
 `;
 class CartOverlay extends Component {
+
+  
   handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 

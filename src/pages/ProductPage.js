@@ -6,6 +6,7 @@ import { withRouter } from "../Routes/withRouter";
 import ReactHtmlParser from "html-react-parser";
 import { connect } from "react-redux";
 import { addProductToCart } from "../actions/cart";
+import { getCategoryName } from "../actions/category";
 
 const Container = styled.div`
   width: 90%;
@@ -17,7 +18,7 @@ const BodyOverlay = styled.div`
   display: ${(props) => (props.openOverlay ? "block" : "none")};
   width: 100%;
   height: 100%;
-  top: 8%;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -171,6 +172,11 @@ class ProductPage extends Component {
       imageIndex: 0,
       selectedAttributes: {},
     };
+  }
+
+  componentDidMount() {
+    const { categoryName } = this.props.params;
+    this.props.dispatch(getCategoryName(categoryName));
   }
 
   handleShowImage = (imageIndex) => {

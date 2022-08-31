@@ -5,6 +5,7 @@ import App from "./App";
 import { createStore } from "redux";
 import allReducers from "./reducers";
 import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 
 const store = createStore(
   allReducers,
@@ -22,7 +23,9 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <ApolloProvider client={client}>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ApolloProvider>
     </Provider>
   </React.StrictMode>

@@ -18,7 +18,7 @@ const BodyOverlay = styled.div`
   display: ${(props) => (props.openOverlay ? "block" : "none")};
   width: 100%;
   height: 100%;
-  top: 8%;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -321,7 +321,7 @@ class CartPage extends Component {
                                   type="radio"
                                   value={item.value}
                                   id={`${item.id}-${itemIndex}-${attIndex}`}
-                                  name={`product-${prIndex}-attribute-${attIndex}`}
+                                  name={`cart-${prIndex}-attribute-${attIndex}`}
                                   checked={
                                     productInCart.selectedAttributes[
                                       `${attribute.id}`
@@ -341,7 +341,7 @@ class CartPage extends Component {
                                   type="radio"
                                   value={item.value}
                                   id={`${item.id}-${itemIndex}-${attIndex}`}
-                                  name={`product-${prIndex}-attribute-${attIndex}`}
+                                  name={`cart-${prIndex}-attribute-${attIndex}`}
                                   checked={
                                     productInCart.selectedAttributes[
                                       `${attribute.id}`

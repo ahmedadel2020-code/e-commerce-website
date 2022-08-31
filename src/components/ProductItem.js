@@ -77,12 +77,13 @@ class ProductItem extends Component {
   };
 
   handleShowProductDetails = (e) => {
+    const { product } = this.props;
     e.preventDefault();
 
     const dataValue = e.target.getAttribute("data-value");
 
-    if (dataValue !== "child") {
-      this.props.navigate(`/product/${this.props.product.id}`);
+    if (dataValue === "parent") {
+      this.props.navigate(`/product/${product.id}/${product.category}`);
     }
   };
 
@@ -93,11 +94,11 @@ class ProductItem extends Component {
         (productInCart) => productInCart.product.id === newProduct.id
       );
       if (foundedProduct.length === 0 && newProduct.attributes.length === 0) {
-        dispatch(addProductToCart({newProduct, selectedAttributes: {}}));
+        dispatch(addProductToCart({ newProduct, selectedAttributes: {} }));
       }
     } else {
       if (newProduct.attributes.length === 0) {
-        dispatch(addProductToCart({newProduct, selectedAttributes: {}}));
+        dispatch(addProductToCart({ newProduct, selectedAttributes: {} }));
       }
     }
   };
@@ -123,8 +124,9 @@ class ProductItem extends Component {
             <Cart
               cartState={this.state.showCart}
               onClick={() => this.handleAddProductToCart(product)}
+              data-value="child"
             >
-              <ProductCart src={whiteCart} alt="cart" data-value="child" />
+              <ProductCart src={whiteCart} alt="cart" />
             </Cart>
           </ImageWithCartWrapper>
           <ProductName>{`${product.brand} ${product.name}`}</ProductName>
@@ -135,7 +137,7 @@ class ProductItem extends Component {
   }
 }
 
-function mapStateToProps({ currency, cart }) {
+function mapStateToProps({ currency, cart, category }) {
   return {
     currencySymbol: currency.currencySymbol,
     productsInCart: cart.products,

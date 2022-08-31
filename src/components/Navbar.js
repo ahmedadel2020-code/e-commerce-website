@@ -13,6 +13,7 @@ import { withRouter } from "../Routes/withRouter";
 import { connect } from "react-redux";
 import { getSelectedCurrencySymbol } from "../actions/currency";
 import { changeCartOverlayState, getTotalPrice } from "../actions/cart";
+import { getCategoryName } from "../actions/category";
 
 const Container = styled.div`
   height: 80px;
@@ -30,19 +31,10 @@ const CategoryItems = styled.div`
   display: flex;
 `;
 
-const CategoryItem = styled.div`
-  text-transform: uppercase;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 0 16px;
-  margin-right: 32px;
-  cursor: pointer;
-  position: relative;
+const CategoryItemInput = styled.input`
+  display: none;
 
-  &:nth-last-child() {
-    margin-right: 0;
-  }
-  &:nth-child(${(props) => props.categoryIndex}) {
+  &:checked + label {
     color: #5ece7b;
     &::after {
       content: "";
@@ -55,6 +47,17 @@ const CategoryItem = styled.div`
     }
   }
 `;
+
+const CategoryItemLabel = styled.label`
+  text-transform: uppercase;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 16px;
+  margin-right: 32px;
+  cursor: pointer;
+  position: relative;
+`;
+
 const Center = styled.div`
   flex: 1;
   display: flex;
@@ -139,34 +142,24 @@ class Navbar extends Component {
     super(props);
 
     this.wrapperRef = React.createRef();
-    this.cartRef = React.createRef();
 
     this.state = {
       openDropdown: false,
       currencyId: 1,
-      categoryId: 1,
     };
   }
 
   componentDidMount() {
     document.addEventListener("mousedown", this.handleClickOutsideDropdown);
-    document.addEventListener("mousedown", this.handleClickOutsideCart);
   }
 
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.handleClickOutsideDropdown);
-    document.removeEventListener("mousedown", this.handleClickOutsideCart);
   }
 
   handleClickOutsideDropdown = (event) => {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
       this.setState({ openDropdown: false });
-    }
-  };
-
-  handleClickOutsideCart = (event) => {
-    if (this.cartRef && !this.cartRef.current.contains(event.target)) {
-      this.props.dispatch(changeCartOverlayState(false));
     }
   };
 
@@ -185,9 +178,9 @@ class Navbar extends Component {
     dispatch(getTotalPrice(currency));
   };
 
-  handleCategory = (categoryName, index) => {
-    this.setState({ categoryId: index + 1 });
+  handleCategory = (categoryName) => {
     this.props.navigate(`/category/${categoryName}`);
+    this.props.dispatch(getCategoryName(categoryName));
   };
 
   handleCartState = () => {
@@ -197,21 +190,27 @@ class Navbar extends Component {
   render() {
     const { categories, loading: loadingOne } = this.props.getCategories;
     const { currencies, loading: loadingTwo } = this.props.getCurrencies;
-    const { currencySymbol, cartQuantity, cartOverlayState } = this.props;
-
+    const { currencySymbol, cartQuantity, cartOverlayState, categoryName } =
+      this.props;
     return (
       <Container>
         <Left>
           <CategoryItems>
             {!loadingOne &&
-              categories.map((category, index) => (
-                <CategoryItem
-                  categoryIndex={this.state.categoryId}
-                  onClick={() => this.handleCategory(category.name, index)}
-                  key={category.name}
-                >
-                  {category.name}
-                </CategoryItem>
+              categories.map((category) => (
+                <div key={category.name}>
+                  <CategoryItemInput
+                    type="radio"
+                    value={category.name}
+                    id={category.name}
+                    name="categoryRadio"
+                    onChange={() => this.handleCategory(category.name)}
+                    checked={categoryName === category.name}
+                  />
+                  <CategoryItemLabel htmlFor={category.name}>
+                    {category.name}
+                  </CategoryItemLabel>
+                </div>
               ))}
           </CategoryItems>
         </Left>
@@ -239,7 +238,7 @@ class Navbar extends Component {
                 ))}
             </DropdownList>
           </DropDownContainer>
-          <Cart onClick={this.handleCartState} ref={this.cartRef}>
+          <Cart onClick={this.handleCartState}>
             <CartImage src={cart} alt="cart" />
             <CartQuantity>{cartQuantity}</CartQuantity>
           </Cart>
@@ -250,11 +249,12 @@ class Navbar extends Component {
   }
 }
 
-function mapStateToProps({ currency, cart }) {
+function mapStateToProps({ currency, cart, category }) {
   return {
     currencySymbol: currency.currencySymbol,
     cartQuantity: cart.cartQuantity,
     cartOverlayState: cart.cartOverlayState,
+    categoryName: category.categoryName,
   };
 }
 

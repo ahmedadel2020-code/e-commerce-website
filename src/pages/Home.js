@@ -5,6 +5,7 @@ import { GET_CATEGORY } from "../queries/queries";
 import { withRouter } from "../Routes/withRouter";
 import ProductItem from "../components/ProductItem";
 import { connect } from "react-redux";
+import { getCategoryName } from "../actions/category";
 
 const Container = styled.div`
   width: 90%;
@@ -16,7 +17,7 @@ const BodyOverlay = styled.div`
   display: ${(props) => (props.openOverlay ? "block" : "none")};
   width: 100%;
   height: 100%;
-  top: 8%;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -39,20 +40,25 @@ class Home extends Component {
     super(props);
 
     this.state = {
-      category: "all",
       selectedCurrency: "$",
     };
   }
 
-  render() {
+  componentDidMount() {
     const { categoryName } = this.props.params;
-    const { cartOverlayState } = this.props;
+    this.props.dispatch(getCategoryName(categoryName));
+  }
+
+  componentDidUpdate() {
+    const { categoryName } = this.props.params;
+    this.props.dispatch(getCategoryName(categoryName));
+  }
+
+  render() {
+    const { cartOverlayState, categoryName } = this.props;
 
     return (
-      <Query
-        query={GET_CATEGORY}
-        variables={{ title: categoryName ? categoryName : "all" }}
-      >
+      <Query query={GET_CATEGORY} variables={{ title: categoryName }}>
         {({ data, loading }) => {
           if (!loading) {
             return (
@@ -77,9 +83,10 @@ class Home extends Component {
   }
 }
 
-function mapStateToProps({ cart }) {
+function mapStateToProps({ cart, category }) {
   return {
     cartOverlayState: cart.cartOverlayState,
+    categoryName: category.categoryName,
   };
 }
 
