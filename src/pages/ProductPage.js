@@ -5,7 +5,7 @@ import { GET_PRODUCT } from "../GraphQl/queries";
 import { withRouter } from "../Routes/withRouter";
 import ReactHtmlParser from "html-react-parser";
 import { connect } from "react-redux";
-import { addProductToCart } from "../actions/cart";
+import { addProductToCart, incrementProductQuantity } from "../actions/cart";
 import { getCategoryName } from "../actions/category";
 
 const Container = styled.div`
@@ -40,18 +40,14 @@ const ProductSubImages = styled.div`
 `;
 
 const ProductSubImage = styled.img`
-  width: 79px;
   height: 80px;
-  object-fit: contain;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   cursor: pointer;
 `;
 
 const ProductImage = styled.img`
-  width: 50%;
-  height: 640px;
   margin-right: 50px;
-  object-fit: contain;
+  height: 640px;
 `;
 
 const ProductDetails = styled.div`
@@ -195,7 +191,7 @@ class ProductPage extends Component {
   };
 
   handleAddProductToCart = (newProduct) => {
-    const { productsInCart, dispatch } = this.props;
+    const { productsInCart, dispatch, currencySymbol } = this.props;
     const { selectedAttributes } = this.state;
 
     if (productsInCart.length > 0) {
@@ -207,11 +203,19 @@ class ProductPage extends Component {
 
       if (foundedProduct.length === 0) {
         dispatch(addProductToCart({ newProduct, selectedAttributes }));
+      } else {
+        // handle same product => stack it on the cart by incrementing it's quantity
+        dispatch(
+          incrementProductQuantity({
+            productId: newProduct.id,
+            selectedAttributes,
+            currencySymbol,
+          })
+        );
       }
     } else {
       dispatch(addProductToCart({ newProduct, selectedAttributes }));
     }
-    this.setState({ selectedAttributes: {} });
   };
 
   render() {
@@ -313,10 +317,13 @@ class ProductPage extends Component {
                       </ProductAttributesWrapper>
                     ))}
                     <ProductPriceTypography>Price:</ProductPriceTypography>
-                    <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
+                    <ProductPrice>{`${currencySymbol} ${productPrice[0].amount.toFixed(
+                      2
+                    )}`}</ProductPrice>
                     <Button
                       disabled={
-                        selectedAttributesSize !== product.attributes.length
+                        selectedAttributesSize !== product.attributes.length ||
+                        product.inStock === false
                       }
                       onClick={() => this.handleAddProductToCart(product)}
                     >

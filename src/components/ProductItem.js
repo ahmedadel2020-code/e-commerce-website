@@ -6,13 +6,14 @@ import { connect } from "react-redux";
 import { addProductToCart } from "../actions/cart";
 
 const Container = styled.div`
-  width: 386px;
-  height: 444px;
+  width: 400px;
   padding-top: 25px;
+  padding-right: 20px;
+  padding-left: 20px;
   display: flex;
   justify-content: center;
   margin-bottom: 100px;
-  cursor: ${(props) => (props.inStock ? "pointer" : "default")};
+  cursor: pointer;
   opacity: ${(props) => (props.inStock ? "1" : "0.5")};
   &:hover {
     box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);
@@ -21,7 +22,6 @@ const Container = styled.div`
 
 const ProductImage = styled.img`
   height: 330px;
-  width: 320px;
 `;
 
 const ProductName = styled.p`
@@ -91,7 +91,7 @@ class ProductItem extends Component {
 
     const dataValue = e.target.getAttribute("data-value");
 
-    if (dataValue === "parent" && product.inStock) {
+    if (dataValue === "parent") {
       this.props.navigate(`/product/${product.id}/${product.category}`);
     }
   };
@@ -147,7 +147,9 @@ class ProductItem extends Component {
             )}
           </ImageWithCartWrapper>
           <ProductName>{`${product.brand} ${product.name}`}</ProductName>
-          <ProductPrice>{`${currencySymbol} ${productPrice[0].amount}`}</ProductPrice>
+          <ProductPrice>{`${currencySymbol} ${productPrice[0].amount.toFixed(
+            2
+          )}`}</ProductPrice>
         </div>
       </Container>
     );

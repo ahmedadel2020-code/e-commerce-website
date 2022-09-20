@@ -74,6 +74,7 @@ const DropDownContainer = styled.div`
   display: flex;
   position: relative;
   margin-right: 20px;
+  cursor: pointer;
 `;
 
 const DropdownList = styled.div`
@@ -142,6 +143,7 @@ class Navbar extends Component {
     super(props);
 
     this.wrapperRef = React.createRef();
+    this.cartRef = React.createRef();
 
     this.state = {
       openDropdown: false,
@@ -151,15 +153,24 @@ class Navbar extends Component {
 
   componentDidMount() {
     document.addEventListener("mousedown", this.handleClickOutsideDropdown);
+    document.addEventListener("mousedown", this.handleClickOutsideCartOverlay);
   }
 
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.handleClickOutsideDropdown);
+    document.addEventListener("mousedown", this.handleClickOutsideCartOverlay);
   }
 
   handleClickOutsideDropdown = (event) => {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
       this.setState({ openDropdown: false });
+    }
+  };
+
+  handleClickOutsideCartOverlay = (event) => {
+    const { dispatch } = this.props;
+    if (this.cartRef && !this.cartRef.current.contains(event.target)) {
+      dispatch(changeCartOverlayState(false));
     }
   };
 
@@ -184,7 +195,8 @@ class Navbar extends Component {
   };
 
   handleCartState = () => {
-    this.props.dispatch(changeCartOverlayState(!this.props.cartOverlayState));
+    const { dispatch } = this.props;
+    dispatch(changeCartOverlayState(true));
   };
 
   render() {
@@ -218,12 +230,14 @@ class Navbar extends Component {
           <img src={logo} alt="logo" />
         </Center>
         <Right>
-          <DropDownContainer ref={this.wrapperRef}>
+          <DropDownContainer
+            ref={this.wrapperRef}
+            onClick={this.handleDropdownClick}
+          >
             <SelectedCurrency>{currencySymbol}</SelectedCurrency>
             <ArrowImage
               src={this.state.openDropdown ? arrowUp : arrowDown}
               alt="arrowDown"
-              onClick={this.handleDropdownClick}
             />
             <DropdownList open={this.state.openDropdown}>
               {!loadingTwo &&
@@ -238,11 +252,11 @@ class Navbar extends Component {
                 ))}
             </DropdownList>
           </DropDownContainer>
-          <Cart onClick={this.handleCartState}>
+          <Cart onClick={this.handleCartState} ref={this.cartRef}>
             <CartImage src={cart} alt="cart" />
             <CartQuantity>{cartQuantity}</CartQuantity>
+            {cartOverlayState && <CartOverlay />}
           </Cart>
-          {cartOverlayState && <CartOverlay />}
         </Right>
       </Container>
     );

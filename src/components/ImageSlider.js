@@ -74,15 +74,16 @@ class ImageSlider extends Component {
           src={product.gallery[this.state.imageIndex]}
           alt={product.name}
         />
-
-        <ArrowWrapper>
-          <Arrow onClick={() => this.handleImageSlide("left")}>
-            <img src={LeftArrow} alt="left arrow" />
-          </Arrow>
-          <Arrow onClick={() => this.handleImageSlide("right")}>
-            <img src={RightArrow} alt="right arrow" />
-          </Arrow>
-        </ArrowWrapper>
+        {product.gallery.length > 1 && (
+          <ArrowWrapper>
+            <Arrow onClick={() => this.handleImageSlide("left")}>
+              <img src={LeftArrow} alt="left arrow" />
+            </Arrow>
+            <Arrow onClick={() => this.handleImageSlide("right")}>
+              <img src={RightArrow} alt="right arrow" />
+            </Arrow>
+          </ArrowWrapper>
+        )}
       </ImageWrapper>
     );
   }

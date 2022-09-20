@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import {
-  changeCartOverlayState,
   decrementProductQuantity,
   incrementProductQuantity,
   removeProductFromCart,
@@ -16,8 +15,8 @@ const Container = styled.div`
   padding: 32px 16px;
 
   background-color: #ffffff;
-  top: 77px;
-  right: 56;
+  top: 50px;
+  right: 0;
   z-index: 3;
   overflow: overlay;
 `;
@@ -265,7 +264,6 @@ class CartOverlay extends Component {
 
   handleNavigateToCartPage = () => {
     this.props.navigate("/cart");
-    this.props.dispatch(changeCartOverlayState(false));
   };
 
   render() {
@@ -285,7 +283,7 @@ class CartOverlay extends Component {
                 (productPrice) =>
                   productPrice.currency.symbol === currencySymbol && (
                     <ProductPrice key={productPrice.currency.label}>
-                      {`${currencySymbol} ${productPrice.amount}`}
+                      {`${currencySymbol} ${productPrice.amount.toFixed(2)}`}
                     </ProductPrice>
                   )
               )}

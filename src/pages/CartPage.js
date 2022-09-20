@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import {
+  changeCartOverlayState,
   decrementProductQuantity,
   incrementProductQuantity,
   removeProductFromCart,
@@ -244,6 +245,12 @@ const OrderButton = styled.button`
 `;
 
 class CartPage extends Component {
+  componentDidMount() {
+    const { cartOverlayState, dispatch } = this.props;
+    if (cartOverlayState) {
+      dispatch(changeCartOverlayState(false));
+    }
+  }
 
   handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
@@ -299,7 +306,7 @@ class CartPage extends Component {
                   (productPrice) =>
                     productPrice.currency.symbol === currencySymbol && (
                       <ProductPrice key={productPrice.currency.label}>
-                        {`${currencySymbol} ${productPrice.amount}`}
+                        {`${currencySymbol} ${productPrice.amount.toFixed(2)}`}
                       </ProductPrice>
                     )
                 )}

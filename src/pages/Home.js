@@ -38,12 +38,12 @@ const CategoryParagraph = styled.p`
 class Home extends Component {
   componentDidMount() {
     const { categoryName } = this.props.params;
-    this.props.dispatch(getCategoryName(categoryName));
+    this.props.dispatch(getCategoryName(categoryName ? categoryName : "all"));
   }
 
   componentDidUpdate() {
     const { categoryName } = this.props.params;
-    this.props.dispatch(getCategoryName(categoryName));
+    this.props.dispatch(getCategoryName(categoryName ? categoryName : "all"));
   }
 
   render() {
