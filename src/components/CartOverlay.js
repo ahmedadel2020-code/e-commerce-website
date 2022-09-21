@@ -2,21 +2,50 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import {
+  changeCartOverlayState,
   decrementProductQuantity,
   incrementProductQuantity,
   removeProductFromCart,
 } from "../actions/cart";
+import cart from "../assets/cart.svg";
+
 import { withRouter } from "../Routes/withRouter";
 
-const Container = styled.div`
+const Cart = styled.div`
+  position: relative;
+`;
+
+const CartImage = styled.img`
+  cursor: pointer;
+`;
+
+const CartQuantityNav = styled.div`
+  width: 20px;
+  height: 20px;
+  background-color: #1d1f22;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  position: absolute;
+  top: -11px;
+  right: -10px;
+  cursor: pointer;
+`;
+
+const OverlayContainer = styled.div`
   position: absolute;
   width: 325px;
   max-height: 677px;
   padding: 32px 16px;
 
   background-color: #ffffff;
-  top: 50px;
-  right: 0;
+  top: 79px;
+  right: 40px;
   z-index: 3;
   overflow: overlay;
 `;
@@ -232,6 +261,27 @@ const CheckoutButton = styled.button`
   cursor: pointer;
 `;
 class CartOverlay extends Component {
+  constructor(props) {
+    super(props);
+
+    this.cartRef = React.createRef();
+  }
+
+  componentDidMount() {
+    document.addEventListener("mousedown", this.handleClickOutsideCartOverlay);
+  }
+
+  componentWillUnmount() {
+    document.addEventListener("mousedown", this.handleClickOutsideCartOverlay);
+  }
+
+  handleClickOutsideCartOverlay = (event) => {
+    const { dispatch } = this.props;
+    if (this.cartRef && !this.cartRef.current.contains(event.target)) {
+      dispatch(changeCartOverlayState(false));
+    }
+  };
+
   handleIncreaseQuantity = (productId, selectedAttributes) => {
     const { dispatch, currencySymbol } = this.props;
 
@@ -266,126 +316,151 @@ class CartOverlay extends Component {
     this.props.navigate("/cart");
   };
 
+  handleCartState = () => {
+    const { dispatch, cartOverlayState } = this.props;
+    dispatch(changeCartOverlayState(!cartOverlayState));
+  };
+
   render() {
-    const { productsInCart, cartQuantity, currencySymbol, totalPrice } =
-      this.props;
+    const {
+      productsInCart,
+      cartQuantity,
+      currencySymbol,
+      cartOverlayState,
+      totalPrice,
+    } = this.props;
 
     return (
-      <Container>
-        <CartQuantityTypography>My Bag,</CartQuantityTypography>
-        <CartQuantity>{cartQuantity} items</CartQuantity>
-        {productsInCart.map((productInCart, prIndex) => (
-          <ProductWrapper key={prIndex}>
-            <ProductDetails>
-              <ProductBrand>{productInCart.product.brand}</ProductBrand>
-              <ProductName>{productInCart.product.name}</ProductName>
-              {productInCart.product.prices.map(
-                (productPrice) =>
-                  productPrice.currency.symbol === currencySymbol && (
-                    <ProductPrice key={productPrice.currency.label}>
-                      {`${currencySymbol} ${productPrice.amount.toFixed(2)}`}
-                    </ProductPrice>
-                  )
-              )}
-              <ProductAttributes>
-                {productInCart.product.attributes.map((attribute, attIndex) => (
-                  <ProductAttributesWrapper key={attribute.id}>
-                    <ProductAttributeType>{attribute.id}:</ProductAttributeType>
-                    <ProductItemsWrapper>
-                      {attribute.items.map((item, itemIndex) =>
-                        attribute.type === "swatch" ? (
-                          <ColorBox key={item.id}>
-                            <ProductAttributeColorInput
-                              type="radio"
-                              value={item.value}
-                              id={`${item.id}-${itemIndex}-${attIndex}`}
-                              name={`product-${prIndex}-attribute-${attIndex}`}
-                              checked={
-                                productInCart.selectedAttributes[
-                                  `${attribute.id}`
-                                ] === item.value
-                              }
-                              readOnly
-                            />
-                            <ProductAttributeColorLabel
-                              isWhite={item.value === "#FFFFFF"}
-                              color={item.value}
-                              htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
-                            ></ProductAttributeColorLabel>
-                          </ColorBox>
-                        ) : (
-                          <div key={item.id}>
-                            <ProductAttribute
-                              type="radio"
-                              value={item.value}
-                              id={`${item.id}-${itemIndex}-${attIndex}`}
-                              name={`product-${prIndex}-attribute-${attIndex}`}
-                              checked={
-                                productInCart.selectedAttributes[
-                                  `${attribute.id}`
-                                ] === item.value
-                              }
-                              readOnly
-                            />
-                            <ProductAttributeLabel
-                              htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
-                              itemValue={item.value}
-                            >
-                              {item.value}
-                            </ProductAttributeLabel>
-                          </div>
-                        )
-                      )}
-                    </ProductItemsWrapper>
-                  </ProductAttributesWrapper>
-                ))}
-              </ProductAttributes>
-            </ProductDetails>
-            <QuantityWrapper>
-              <IncreaseQuantity
-                onClick={() =>
-                  this.handleIncreaseQuantity(
-                    productInCart.product.id,
-                    productInCart.selectedAttributes
-                  )
-                }
-              >
-                +
-              </IncreaseQuantity>
-              <ProductQuantity>{productInCart.quantity}</ProductQuantity>
-              <DecreaseQuantity
-                onClick={() =>
-                  this.handleDecreaseQuantity(
-                    productInCart.product.id,
-                    productInCart.quantity,
-                    productInCart.selectedAttributes
-                  )
-                }
-              >
-                -
-              </DecreaseQuantity>
-            </QuantityWrapper>
-            <ProductImage
-              src={productInCart.product.gallery[0]}
-              alt={productInCart.product.name}
-            />
-          </ProductWrapper>
-        ))}
-        {cartQuantity > 0 && (
-          <>
-            <ProductsTotalWrapper>
-              <TotalTypography>Total</TotalTypography>
-              <TotalPrice>{`${currencySymbol} ${totalPrice}`}</TotalPrice>
-            </ProductsTotalWrapper>
-            <CartButtonsWrapper>
-              <ViewPageButton onClick={this.handleNavigateToCartPage}>
-                View Bag
-              </ViewPageButton>
-              <CheckoutButton>Check out</CheckoutButton>
-            </CartButtonsWrapper>
-          </>
+      <div ref={this.cartRef}>
+        <Cart onClick={this.handleCartState}>
+          <CartImage src={cart} alt="cart" />
+          <CartQuantityNav>{cartQuantity}</CartQuantityNav>
+        </Cart>
+
+        {cartOverlayState && (
+          <OverlayContainer>
+            <CartQuantityTypography>My Bag,</CartQuantityTypography>
+            <CartQuantity>{cartQuantity} items</CartQuantity>
+            {productsInCart.map((productInCart, prIndex) => (
+              <ProductWrapper key={prIndex}>
+                <ProductDetails>
+                  <ProductBrand>{productInCart.product.brand}</ProductBrand>
+                  <ProductName>{productInCart.product.name}</ProductName>
+                  {productInCart.product.prices.map(
+                    (productPrice) =>
+                      productPrice.currency.symbol === currencySymbol && (
+                        <ProductPrice key={productPrice.currency.label}>
+                          {`${currencySymbol} ${productPrice.amount.toFixed(
+                            2
+                          )}`}
+                        </ProductPrice>
+                      )
+                  )}
+                  <ProductAttributes>
+                    {productInCart.product.attributes.map(
+                      (attribute, attIndex) => (
+                        <ProductAttributesWrapper key={attribute.id}>
+                          <ProductAttributeType>
+                            {attribute.id}:
+                          </ProductAttributeType>
+                          <ProductItemsWrapper>
+                            {attribute.items.map((item, itemIndex) =>
+                              attribute.type === "swatch" ? (
+                                <ColorBox key={item.id}>
+                                  <ProductAttributeColorInput
+                                    type="radio"
+                                    value={item.value}
+                                    id={`${item.id}-${itemIndex}-${attIndex}`}
+                                    name={`product-${prIndex}-attribute-${attIndex}`}
+                                    checked={
+                                      productInCart.selectedAttributes[
+                                        `${attribute.id}`
+                                      ] === item.value
+                                    }
+                                    readOnly
+                                  />
+                                  <ProductAttributeColorLabel
+                                    isWhite={item.value === "#FFFFFF"}
+                                    color={item.value}
+                                    htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                                  ></ProductAttributeColorLabel>
+                                </ColorBox>
+                              ) : (
+                                <div key={item.id}>
+                                  <ProductAttribute
+                                    type="radio"
+                                    value={item.value}
+                                    id={`${item.id}-${itemIndex}-${attIndex}`}
+                                    name={`product-${prIndex}-attribute-${attIndex}`}
+                                    checked={
+                                      productInCart.selectedAttributes[
+                                        `${attribute.id}`
+                                      ] === item.value
+                                    }
+                                    readOnly
+                                  />
+                                  <ProductAttributeLabel
+                                    htmlFor={`${item.id}-${itemIndex}-${attIndex}`}
+                                    itemValue={item.value}
+                                  >
+                                    {item.value}
+                                  </ProductAttributeLabel>
+                                </div>
+                              )
+                            )}
+                          </ProductItemsWrapper>
+                        </ProductAttributesWrapper>
+                      )
+                    )}
+                  </ProductAttributes>
+                </ProductDetails>
+                <QuantityWrapper>
+                  <IncreaseQuantity
+                    onClick={() =>
+                      this.handleIncreaseQuantity(
+                        productInCart.product.id,
+                        productInCart.selectedAttributes
+                      )
+                    }
+                  >
+                    +
+                  </IncreaseQuantity>
+                  <ProductQuantity>{productInCart.quantity}</ProductQuantity>
+                  <DecreaseQuantity
+                    onClick={() =>
+                      this.handleDecreaseQuantity(
+                        productInCart.product.id,
+                        productInCart.quantity,
+                        productInCart.selectedAttributes
+                      )
+                    }
+                  >
+                    -
+                  </DecreaseQuantity>
+                </QuantityWrapper>
+                <ProductImage
+                  src={productInCart.product.gallery[0]}
+                  alt={productInCart.product.name}
+                />
+              </ProductWrapper>
+            ))}
+            {cartQuantity > 0 && (
+              <>
+                <ProductsTotalWrapper>
+                  <TotalTypography>Total</TotalTypography>
+                  <TotalPrice>{`${currencySymbol} ${totalPrice}`}</TotalPrice>
+                </ProductsTotalWrapper>
+                <CartButtonsWrapper>
+                  <ViewPageButton onClick={this.handleNavigateToCartPage}>
+                    View Bag
+                  </ViewPageButton>
+                  <CheckoutButton>Check out</CheckoutButton>
+                </CartButtonsWrapper>
+              </>
+            )}
+          </OverlayContainer>
         )}
-      </Container>
+      </div>
     );
   }
 }
@@ -395,6 +470,7 @@ function mapStateToProps({ currency, cart }) {
     productsInCart: cart.products,
     currencySymbol: currency.currencySymbol,
     totalPrice: cart.totalPrice,
+    cartOverlayState: cart.cartOverlayState,
   };
 }
 
